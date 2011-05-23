@@ -1,0 +1,20 @@
+<package>
+  <description brief="Memsense IMU generic driver">
+     This is a ROS generic driver for inertial measurement units (IMUs)
+     provided by Memsense. It uses Memsense libraries to handle IMU's output
+     on the serial port (with some errors fixed, and a rewritten serial port 
+     class for Unix alike systems).
+  </description>
+  <author>Joan Pau Beltran</author>
+  <license>GPL (need to check it)</license>
+  <review status="unreviewed" notes=""/>
+  <url>http://ros.org/wiki/memsense_imu</url>
+  <depend package="roscpp"/>
+  <depend package="sensor_msgs"/>
+  <depend package="driver_base"/>
+  <depend package="dynamic_reconfigure" />
+  <depend package="nav_msgs"/>
+  <depend package="tf"/>
+</package>
+
+
