@@ -95,12 +95,12 @@ void memsense_imu::IMUBaseNode::advertiseTopics()
 
 void memsense_imu::IMUBaseNode::poll()
 {
-  SampleArray sample;
   if (sampler_ready_)
   {
     if( sampler_.readSample() )
     {
       ROS_DEBUG_STREAM("Sample read.");
+      SampleArray sample;
       sampler_.getDataReal(&sample[MAGN_GYRO], &sample[MAGN_ACCEL], &sample[MAGN_MAG]);
       if (do_filtering_)
         filter_.update(sample);
@@ -127,7 +127,16 @@ void memsense_imu::IMUBaseNode::processData(const SampleArray& sample,
   msg->header.stamp = ros::Time::now();
   msg->header.frame_id = frame_id_;
   msg_unbias->header = msg->header;
-
+  
+  // initiatize covariances
+  for (int i=0; i<3; i++)
+  {
+    msg->angular_velocity_covariance[4*i] = -1.0;
+    msg->linear_acceleration_covariance[4*i] = -1.0;
+    msg_unbias->angular_velocity_covariance[4*i] = -1.0;
+    msg_unbias->linear_acceleration_covariance[4*i] = -1.0;
+  }
+  
   // fill gyro values and covariances
   switch( sample[MAGN_GYRO].size() )
   {
@@ -146,15 +155,8 @@ void memsense_imu::IMUBaseNode::processData(const SampleArray& sample,
       msg->angular_velocity_covariance[0] = var[MAGN_GYRO];
       msg_unbias->angular_velocity.x = sample[MAGN_GYRO][X_AXIS]-bias[MAGN_GYRO][X_AXIS];
       msg_unbias->angular_velocity_covariance[0] = var[MAGN_GYRO];
-      break;
-    default :
-      for (int i=0; i<3; i++)
-      {
-        msg->angular_velocity_covariance[4*i] = -1.0;
-        msg_unbias->angular_velocity_covariance[4*i] = -1.0;
-      }
   }
-
+  
   // fill accel values and covariances
   switch( sample[MAGN_ACCEL].size() )
   {
@@ -173,15 +175,8 @@ void memsense_imu::IMUBaseNode::processData(const SampleArray& sample,
       msg->linear_acceleration_covariance[0] = var[MAGN_ACCEL];
       msg_unbias->linear_acceleration.x = sample[MAGN_ACCEL][X_AXIS]-bias[MAGN_ACCEL][X_AXIS];
       msg_unbias->linear_acceleration_covariance[0] = var[MAGN_ACCEL];
-      break;
-    default :
-      for (int i=0; i<3; i++)
-      {
-        msg->linear_acceleration_covariance[4*i] = -1.0;
-        msg_unbias->linear_acceleration_covariance[4*i] = -1.0;
-      }
   }
-
+  
   // publish;
   pub_raw.publish(msg);
   pub_calibrated.publish(msg_unbias);
@@ -194,7 +189,7 @@ void memsense_imu::IMUBaseNode::timedPublishCallback()
   if ( count != 0 )
   {
     SampleArray means;
-    filter_.mean(means);
+    filter_.mean(&means);
     VarianceTable mean_vars;
     BiasTable mean_biases;
     for (int i=0; i<NUM_MAGNS; i++)

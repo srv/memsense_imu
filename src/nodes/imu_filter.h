@@ -34,7 +34,7 @@ public:
 
   void update(const SampleArray& s);
 
-  void mean(SampleArray& s);
+  void mean(SampleArray* s);
 
 private:
 

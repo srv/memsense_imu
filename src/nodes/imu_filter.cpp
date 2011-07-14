@@ -24,7 +24,7 @@ unsigned int memsense_imu::Filter::count()
 void memsense_imu::Filter::update(const SampleArray& s)
 {
   for(int i=0; i<NUM_MAGNS; i++)
-    for (int j=s[i].size()-1; j>=0; j++)
+    for (int j=s[i].size()-1; j>=0; j--)
       samples_[i][j].push_back(s[i][j]);
   count_++;
 }
@@ -38,20 +38,22 @@ void memsense_imu::Filter::reset()
   count_ = 0;
 }
 
-
-void memsense_imu::Filter::mean(SampleArray& s)
+void memsense_imu::Filter::mean(SampleArray* s)
 {
   for (int i=0; i<NUM_MAGNS; i++)
-    for (int j=0; j<NUM_AXES; i++)
+  {
+    (*s)[i].clear();
+    for (int j=0; j<NUM_AXES; j++)
     {
-      const int count = samples_[i][j].size();
-      if(count>0)
+      const int num = samples_[i][j].size();
+      if(num>0)
       {
         double mean = 0.0;
-        for (int k=samples_[i][j].size()-1; k>=0; k--)
+        for (int k=num-1; k>=0; k--)
           mean += samples_[i][j][k];
-        mean /= count;
-        s[i].push_back(mean);
+        mean /= num;
+        (*s)[i].push_back(mean);
       }
     }
+  }
 }
