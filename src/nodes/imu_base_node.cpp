@@ -53,7 +53,9 @@
 #include "imu_base_node.h"
 
 memsense_imu::IMUBaseNode::IMUBaseNode(const ros::NodeHandle& nh)
-: node_(nh)
+: node_(nh),
+  port_(""), imu_type_(mems::DT_INVALID),
+  polling_rate_(0.0), filter_rate_(0.0)
 {}
 
 /*---------------------------------------------------------------------------
@@ -95,21 +97,28 @@ void memsense_imu::IMUBaseNode::advertiseTopics()
 
 void memsense_imu::IMUBaseNode::poll()
 {
-  if (sampler_ready_)
+  try
   {
-    if( sampler_.readSample() )
+    if (sampler_ready_)
     {
-      ROS_DEBUG_STREAM("Sample read.");
-      SampleArray sample;
-      sampler_.getDataReal(&sample[MAGN_GYRO], &sample[MAGN_ACCEL], &sample[MAGN_MAG]);
-      if (do_filtering_)
-        filter_.update(sample);
-      processData(sample, biases_, vars_, pub_raw_, pub_unbiased_);
+      if( sampler_.readSample() )
+      {
+        ROS_DEBUG_STREAM("Sample read.");
+        SampleArray sample;
+        sampler_.getDataReal(&sample[MAGN_GYRO], &sample[MAGN_ACCEL], &sample[MAGN_MAG]);
+        if (do_filtering_)
+          filter_.update(sample);
+        processData(sample, biases_, vars_, pub_raw_, pub_unbiased_);
+      }
+      else
+      {
+        ROS_DEBUG_STREAM("Sample read failure.");
+      }
     }
-    else
-    {
-      ROS_DEBUG_STREAM("Sample read failure.");
-    }
+  }
+  catch (std::exception &e)
+  {
+    ROS_ERROR_STREAM("Error polling IMU : " << e.what() );
   }
 }
 
@@ -183,7 +192,7 @@ void memsense_imu::IMUBaseNode::processData(const SampleArray& sample,
 
 }
   
-void memsense_imu::IMUBaseNode::timedPublishCallback()
+void memsense_imu::IMUBaseNode::outputFilter()
 {
   unsigned int count = filter_.count();
   if ( count != 0 )
@@ -203,29 +212,6 @@ void memsense_imu::IMUBaseNode::timedPublishCallback()
   }
 }
 
-
-void memsense_imu::IMUBaseNode::startFilterTimer()
-{
-  if (timed_caller_)
-  {
-    timed_caller_.setPeriod(ros::Duration(1.0/filter_rate_));
-    timed_caller_.start();
-  }
-  else
-  {
-    timed_caller_ = node_.createTimer(ros::Duration(1.0/filter_rate_),
-                          boost::bind(&IMUBaseNode::timedPublishCallback,this));
-  }
-}
-
-void memsense_imu::IMUBaseNode::stopFilterTimer()
-{
-  if (timed_caller_)
-  {
-    timed_caller_.stop();
-  }
-}
-  
 template <typename T>
 bool memsense_imu::IMUBaseNode::updateDynParam(T* param, const T& new_value) const
 {
@@ -289,23 +275,54 @@ void memsense_imu::IMUBaseNode::dynReconfigureParams(memsense_imu::IMUDynParamsC
       port_ok_ = true;
     }
 
-    sampler_ready_ = parser_ok_ && port_ok_ ;
+    sampler_ready_ = parser_ok_ && port_ok_;
 
     if ( sampler_ready_ )
     {
-      if (updateDynParam(&filter_rate_,params.filter_rate))
+      if (updateDynParam(&polling_rate_,params.polling_rate))
       {
-        if ( filter_rate_>0.0 )
+        if ( polling_rate_==0.0 )
         {
-          ROS_INFO_STREAM("Setting filtered output rate to " << filter_rate_);
-          startFilterTimer();
-          do_filtering_ = true;
+          ROS_INFO_STREAM("Stopping raw output" );
+          polling_timer_.stop();
         }
         else
         {
+          ROS_INFO_STREAM("Setting polling rate to " << polling_rate_ << " hz");
+          if (polling_timer_)
+          {
+            polling_timer_.setPeriod(ros::Duration(1.0/polling_rate_));
+            polling_timer_.start();
+          }
+          else
+          {
+            polling_timer_ = node_.createTimer(ros::Duration(1.0/polling_rate_),
+                                               boost::bind(&IMUBaseNode::poll,this));
+          }
+        }
+      }
+      if (updateDynParam(&filter_rate_,params.filter_rate))
+      {
+        if ( filter_rate_==0.0 )
+        {
           ROS_INFO_STREAM("Stopping filtered output" );
-          stopFilterTimer();
+          filter_timer_.stop();
           do_filtering_ = false;
+        }
+        else
+        {
+          ROS_INFO_STREAM("Setting filter rate to " << filter_rate_ << " hz");
+          if (filter_timer_)
+          {
+            filter_timer_.setPeriod(ros::Duration(1.0/filter_rate_));
+            filter_timer_.start();
+          }
+          else
+          {
+            filter_timer_ = node_.createTimer(ros::Duration(1.0/filter_rate_),
+                                              boost::bind(&IMUBaseNode::outputFilter,this));
+          }
+          do_filtering_ = true;
         }
       }
     }
@@ -313,9 +330,18 @@ void memsense_imu::IMUBaseNode::dynReconfigureParams(memsense_imu::IMUDynParamsC
   catch (std::exception& e)
   {
     ROS_ERROR_STREAM("Error reconfiguring device : " << e.what());
-    stopFilterTimer();
-    filter_rate_ = -1.0;
+    if (polling_rate_>0.0)
+    {
+      polling_timer_.stop();
+      polling_rate_ = 0.0;
+    }
     sampler_ready_ = false;
+    if (filter_rate_>0.0)
+    {
+      filter_timer_.stop();
+      filter_rate_ = 0.0;
+    }
+    do_filtering_ = true;
   }
 }
 

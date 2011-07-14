@@ -84,25 +84,23 @@ public:
 
   void poll();
   
+  void outputFilter();
+
 private:
+
   ros::NodeHandle node_;
   // ros::NodeHandle priv_;
   ros::Publisher pub_raw_;
   ros::Publisher pub_unbiased_;
   ros::Publisher pub_filtered_raw_;
   ros::Publisher pub_filtered_unbiased_;
-  ros::Timer timed_caller_;
+  ros::Timer polling_timer_;
+  ros::Timer filter_timer_;
   dynamic_reconfigure::Server<memsense_imu::IMUDynParamsConfig> dyn_params_srv_;
   
   std::string frame_id_;
   
-  Filter filter_;
-  
   mems::IMUSampler sampler_;
-
-  bool sampler_ready_;
-  bool parser_ok_;
-  bool port_ok_;
   
   std::string port_;
   mems::E_DeviceType imu_type_;
@@ -110,6 +108,14 @@ private:
   VarianceTable vars_;
   BiasTable biases_;
   
+  bool sampler_ready_;
+  bool parser_ok_;
+  bool port_ok_;
+
+  double polling_rate_;
+
+  Filter filter_;
+
   double filter_rate_;
   bool do_filtering_;
 
@@ -118,18 +124,12 @@ private:
                    const VarianceTable& var,
                    const ros::Publisher& pub_raw,
                    const ros::Publisher& pub_calibrated);
-  
-  void timedPublishCallback();
-  
-  void startFilterTimer();
-  
-  void stopFilterTimer();
-  
+
   template <typename T>
   bool updateDynParam(T* param, const T& new_value) const;
 
   void dynReconfigureParams(memsense_imu::IMUDynParamsConfig& params, uint32_t level);
-  
+
   // IMU types and names
   static const std::map<std::string,mems::E_DeviceType> IMU_TYPE_NAMES_;
   static std::map<std::string,mems::E_DeviceType> define_type_names();

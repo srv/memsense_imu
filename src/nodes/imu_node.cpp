@@ -55,21 +55,10 @@ int main(int argc, char **argv)
   // Publishers and advertise topics
   imu_node.advertiseTopics();
   
-  // Node parameters
+  // Node parameters and callback settings
   imu_node.initDynParamsSrv();
   
-  while(nh.ok())
-  {
-    try
-    {
-      imu_node.poll();
-    }
-    catch (std::exception& e)
-    {
-      ROS_ERROR_STREAM ("Unexpected error polling IMU: " << e.what());
-    }
-    ros::spinOnce();
-  }
+  ros::spin();
 
   return 0;
 }

@@ -2,6 +2,7 @@
 
  <!-- imu_node -->
   <node pkg="memsense_imu" type="imu_node" name="imu_node" output="screen">
+    <param name="polling_rate" value="166.666" type="double" />
     <param name="filter_rate"  value="10.0" type="double" />
     <param name="frame_id"     value="imu" type="string" />
     <param name="serial_port"  value="/dev/ttyUSB0" type="string" />
