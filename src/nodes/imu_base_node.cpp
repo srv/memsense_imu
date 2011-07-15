@@ -143,6 +143,8 @@ void memsense_imu::IMUBaseNode::processData(const SampleArray& sample,
   // initiatize covariances
   for (int i=0; i<3; i++)
   {
+    msg->orientation_covariance[4*i] = -1.0;
+    msg_unbias->orientation_covariance[4*i] = -1.0;
     msg->angular_velocity_covariance[4*i] = -1.0;
     msg->linear_acceleration_covariance[4*i] = -1.0;
     msg_unbias->angular_velocity_covariance[4*i] = -1.0;
@@ -160,7 +162,7 @@ void memsense_imu::IMUBaseNode::processData(const SampleArray& sample,
     case 2 :
       msg->angular_velocity.y = sample[MAGN_GYRO][Y_AXIS];
       msg->angular_velocity_covariance[4] = var[MAGN_GYRO];
-      msg_unbias->angular_velocity.z = sample[MAGN_GYRO][Y_AXIS]-bias[MAGN_GYRO][Y_AXIS];
+      msg_unbias->angular_velocity.y = sample[MAGN_GYRO][Y_AXIS]-bias[MAGN_GYRO][Y_AXIS];
       msg_unbias->angular_velocity_covariance[4] = var[MAGN_GYRO];
     case 1 :
       msg->angular_velocity.x = sample[MAGN_GYRO][X_AXIS];
