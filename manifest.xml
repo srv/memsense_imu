@@ -16,7 +16,7 @@
   <depend package="nodelet" />
   
   <export>
-    <nodelet plugin="${prefix}/imu_nodelet.xml"/>
+    <nodelet plugin="${prefix}/nodelet/imu_nodelet.xml"/>
   </export>
   
 </package>

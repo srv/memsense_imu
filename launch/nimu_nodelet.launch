@@ -6,7 +6,7 @@
 
   <!-- imu driver nodelet -->
   <node pkg="nodelet" type="nodelet" name="imu_nodelet"
-        args="load memsense_imu/imu_driver imu_nodelet_manager" >
+        args="load memsense_imu/imu_nodelet imu_nodelet_manager" >
 
     <param name="polling_rate" value="166.666" type="double" />
     <param name="filter_rate"  value="10.0" type="double" />

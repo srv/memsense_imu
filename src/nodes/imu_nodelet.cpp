@@ -50,18 +50,17 @@
 
 /** Nodelet interface for IMU driver.
  */
-class IMUNodelet: public nodelet::Nodelet, private memsense_imu::IMUBaseNode
+class IMUNodelet: public nodelet::Nodelet
 {
 public:
   IMUNodelet();
 private:
   virtual void onInit();
+  boost::shared_ptr<memsense_imu::IMUBaseNode> imu_node_;
 };
 
 
 IMUNodelet::IMUNodelet()
-: nodelet::Nodelet()
-, memsense_imu::IMUBaseNode(ros::NodeHandle(getNodeHandle(),"imu"))
 {}
 
 /** Nodelet initialization.
@@ -69,11 +68,14 @@ IMUNodelet::IMUNodelet()
  */
 void IMUNodelet::onInit()
 {
+  ros::NodeHandle nh(getNodeHandle(),"imu");
+  imu_node_.reset(new memsense_imu::IMUBaseNode(nh));
+
   // Publishers and advertise topics
-  advertiseTopics();
+  imu_node_->advertiseTopics();
 
   // Node parameters and callback settings
-  initDynParamsSrv();
+  imu_node_->initDynParamsSrv();
 
   // Spin is done by nodelet machinery
 }
