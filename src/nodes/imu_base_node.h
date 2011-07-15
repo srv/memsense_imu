@@ -72,7 +72,8 @@ class IMUBaseNode
 {
 public:
 
-  IMUBaseNode(const ros::NodeHandle& nh);
+  IMUBaseNode(const ros::NodeHandle& nh,
+              const ros::NodeHandle& priv = ros::NodeHandle("~") );
 
   /*---------------------------------------------------------------------------
   void initParams();
@@ -89,7 +90,7 @@ public:
 private:
 
   ros::NodeHandle node_;
-  // ros::NodeHandle priv_;
+  ros::NodeHandle priv_;
   ros::Publisher pub_raw_;
   ros::Publisher pub_unbiased_;
   ros::Publisher pub_filtered_raw_;
