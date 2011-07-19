@@ -96,10 +96,10 @@ void memsense_imu::IMUBaseNode::advertiseTopics()
   pub_unbiased_ = node_.advertise<sensor_msgs::Imu>("data_calibrated",10);
   pub_filtered_raw_ = node_.advertise<sensor_msgs::Imu>("data_filtered",10);
   pub_filtered_unbiased_ = node_.advertise<sensor_msgs::Imu>("data_filtered_calibrated",10);
-  pub_mag_ = node_.advertise<sensor_msgs::Imu>("mag",10);
-  pub_mag_unbiased_ = node_.advertise<sensor_msgs::Imu>("mag_calibrated",10);
-  pub_filtered_mag_ = node_.advertise<sensor_msgs::Imu>("mag_filtered",10);
-  pub_filtered_mag_unbiased_ = node_.advertise<sensor_msgs::Imu>("mag_filtered_calibrated",10);
+  pub_mag_ = node_.advertise<memsense_imu::ImuMAG>("mag",10);
+  pub_mag_unbiased_ = node_.advertise<memsense_imu::ImuMAG>("mag_calibrated",10);
+  pub_filtered_mag_ = node_.advertise<memsense_imu::ImuMAG>("mag_filtered",10);
+  pub_filtered_mag_unbiased_ = node_.advertise<memsense_imu::ImuMAG>("mag_filtered_calibrated",10);
 }
 
 void memsense_imu::IMUBaseNode::poll()
