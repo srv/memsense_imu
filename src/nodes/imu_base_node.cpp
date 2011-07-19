@@ -92,10 +92,14 @@ void memsense_imu::IMUBaseNode::initDynParamsSrv()
 
 void memsense_imu::IMUBaseNode::advertiseTopics()
 {
-  pub_raw_ = node_.advertise<sensor_msgs::Imu>("data",1);
-  pub_unbiased_ = node_.advertise<sensor_msgs::Imu>("data_calibrated",1);
-  pub_filtered_raw_ = node_.advertise<sensor_msgs::Imu>("data_filtered",1);
-  pub_filtered_unbiased_ = node_.advertise<sensor_msgs::Imu>("data_filtered_calibrated",1);
+  pub_raw_ = node_.advertise<sensor_msgs::Imu>("data",10);
+  pub_unbiased_ = node_.advertise<sensor_msgs::Imu>("data_calibrated",10);
+  pub_filtered_raw_ = node_.advertise<sensor_msgs::Imu>("data_filtered",10);
+  pub_filtered_unbiased_ = node_.advertise<sensor_msgs::Imu>("data_filtered_calibrated",10);
+  pub_mag_ = node_.advertise<memsense_imu::ImuMAG>("mag",10);
+  pub_mag_unbiased_ = node_.advertise<memsense_imu::ImuMAG>("mag_calibrated",10);
+  pub_filtered_mag_ = node_.advertise<memsense_imu::ImuMAG>("mag_filtered",10);
+  pub_filtered_mag_unbiased_ = node_.advertise<memsense_imu::ImuMAG>("mag_filtered_calibrated",10);
 }
 
 void memsense_imu::IMUBaseNode::poll()
@@ -107,11 +111,14 @@ void memsense_imu::IMUBaseNode::poll()
       if( sampler_.readSample() )
       {
         ROS_DEBUG_STREAM("Sample read.");
+        const ros::Time stamp = ros::Time::now();
+        const std::string frame_id = frame_id_;
         SampleArray sample;
         sampler_.getDataReal(&sample[MAGN_GYRO], &sample[MAGN_ACCEL], &sample[MAGN_MAG]);
         if (do_filtering_)
           filter_.update(sample);
-        processData(sample, biases_, vars_, pub_raw_, pub_unbiased_);
+        outputData(sample, biases_, vars_, stamp, frame_id, pub_raw_, pub_unbiased_);
+        outputMAGData(sample, biases_, vars_, stamp, frame_id, pub_mag_, pub_mag_unbiased_);
       }
       else
       {
@@ -125,28 +132,29 @@ void memsense_imu::IMUBaseNode::poll()
   }
 }
 
-void memsense_imu::IMUBaseNode::processData(const SampleArray& sample,
-                                            const BiasTable& bias,
-                                            const VarianceTable& var,
-                                            const ros::Publisher& pub_raw,
-                                            const ros::Publisher& pub_calibrated)
+void memsense_imu::IMUBaseNode::outputData(const SampleArray& sample,
+                                           const BiasTable& bias,
+                                           const VarianceTable& var,
+                                           const ros::Time& stamp,
+                                           const std::string& frame_id,
+                                           const ros::Publisher& pub_raw,
+                                           const ros::Publisher& pub_calibrated)
 {
   // messages to publish
   sensor_msgs::ImuPtr msg(new sensor_msgs::Imu());
   sensor_msgs::ImuPtr msg_unbias(new sensor_msgs::Imu());
 
   // fill header
-  msg->header.stamp = ros::Time::now();
-  msg->header.frame_id = frame_id_;
-  msg_unbias->header = msg->header;
+  msg->header.stamp = stamp;
+  msg->header.frame_id = frame_id;
   
   // initiatize covariances
   for (int i=0; i<3; i++)
   {
     msg->orientation_covariance[4*i] = -1.0;
-    msg_unbias->orientation_covariance[4*i] = -1.0;
     msg->angular_velocity_covariance[4*i] = -1.0;
     msg->linear_acceleration_covariance[4*i] = -1.0;
+    msg_unbias->orientation_covariance[4*i] = -1.0;
     msg_unbias->angular_velocity_covariance[4*i] = -1.0;
     msg_unbias->linear_acceleration_covariance[4*i] = -1.0;
   }
@@ -194,15 +202,111 @@ void memsense_imu::IMUBaseNode::processData(const SampleArray& sample,
   // publish;
   pub_raw.publish(msg);
   pub_calibrated.publish(msg_unbias);
-
 }
-  
+
+
+void memsense_imu::IMUBaseNode::outputMAGData(const SampleArray& sample,
+                                              const BiasTable& bias,
+                                              const VarianceTable& var,
+                                              const ros::Time& stamp,
+                                              const std::string& frame_id,
+                                              const ros::Publisher& pub_raw,
+                                              const ros::Publisher& pub_calibrated)
+{
+  // messages to publish
+  memsense_imu::ImuMAGPtr mag(new memsense_imu::ImuMAG());
+  memsense_imu::ImuMAGPtr mag_unbias(new memsense_imu::ImuMAG());
+
+  // fill header
+  mag->header.stamp = stamp;
+  mag->header.frame_id = frame_id;
+  mag_unbias->header = mag->header;
+
+  // initiatize covariances
+  for (int i=0; i<3; i++)
+  {
+    mag->angular_velocity_covariance[4*i] = -1.0;
+    mag->linear_acceleration_covariance[4*i] = -1.0;
+    mag->magnetic_field_covariance [4+i] = -1.0;
+    mag_unbias->angular_velocity_covariance[4*i] = -1.0;
+    mag_unbias->linear_acceleration_covariance[4*i] = -1.0;
+    mag_unbias->magnetic_field_covariance[4*i] = -1.0;
+  }
+
+  // fill gyro values and covariances
+  switch( sample[MAGN_GYRO].size() )
+  {
+    case 3 :
+      mag->angular_velocity.z = sample[MAGN_GYRO][Z_AXIS];
+      mag->angular_velocity_covariance[8] = var[MAGN_GYRO];
+      mag_unbias->angular_velocity.z = sample[MAGN_GYRO][Z_AXIS]-bias[MAGN_GYRO][Z_AXIS];
+      mag_unbias->angular_velocity_covariance[8] = var[MAGN_GYRO];
+    case 2 :
+      mag->angular_velocity.y = sample[MAGN_GYRO][Y_AXIS];
+      mag->angular_velocity_covariance[4] = var[MAGN_GYRO];
+      mag_unbias->angular_velocity.y = sample[MAGN_GYRO][Y_AXIS]-bias[MAGN_GYRO][Y_AXIS];
+      mag_unbias->angular_velocity_covariance[4] = var[MAGN_GYRO];
+    case 1 :
+      mag->angular_velocity.x = sample[MAGN_GYRO][X_AXIS];
+      mag->angular_velocity_covariance[0] = var[MAGN_GYRO];
+      mag_unbias->angular_velocity.x = sample[MAGN_GYRO][X_AXIS]-bias[MAGN_GYRO][X_AXIS];
+      mag_unbias->angular_velocity_covariance[0] = var[MAGN_GYRO];
+  }
+
+  // fill accel values and covariances
+  switch( sample[MAGN_ACCEL].size() )
+  {
+    case 3 :
+      mag->linear_acceleration.z = sample[MAGN_ACCEL][Z_AXIS];
+      mag->linear_acceleration_covariance[8] = var[MAGN_ACCEL];
+      mag_unbias->linear_acceleration.z = sample[MAGN_ACCEL][Z_AXIS]-bias[MAGN_ACCEL][Z_AXIS];
+      mag_unbias->linear_acceleration_covariance[8] = var[MAGN_ACCEL];
+    case 2 :
+      mag->linear_acceleration.y = sample[MAGN_ACCEL][Y_AXIS];
+      mag->linear_acceleration_covariance[4] = var[MAGN_ACCEL];
+      mag_unbias->linear_acceleration.y = sample[MAGN_ACCEL][Y_AXIS]-bias[MAGN_ACCEL][Y_AXIS];
+      mag_unbias->linear_acceleration_covariance[4] = var[MAGN_ACCEL];
+    case 1 :
+      mag->linear_acceleration.x = sample[MAGN_ACCEL][X_AXIS];
+      mag->linear_acceleration_covariance[0] = var[MAGN_ACCEL];
+      mag_unbias->linear_acceleration.x = sample[MAGN_ACCEL][X_AXIS]-bias[MAGN_ACCEL][X_AXIS];
+      mag_unbias->linear_acceleration_covariance[0] = var[MAGN_ACCEL];
+  }
+
+  // fill magnet values and covariances
+  switch( sample[MAGN_MAG].size() )
+  {
+    case 3 :
+      mag->magnetic_field.z = sample[MAGN_MAG][Z_AXIS];
+      mag->magnetic_field_covariance[8] = var[MAGN_MAG];
+      mag_unbias->magnetic_field.z = sample[MAGN_MAG][Z_AXIS]-bias[MAGN_MAG][Z_AXIS];
+      mag_unbias->magnetic_field_covariance[8] = var[MAGN_MAG];
+    case 2 :
+      mag->magnetic_field.y = sample[MAGN_MAG][Y_AXIS];
+      mag->magnetic_field_covariance[4] = var[MAGN_MAG];
+      mag_unbias->magnetic_field.y = sample[MAGN_MAG][Y_AXIS]-bias[MAGN_MAG][Y_AXIS];
+      mag_unbias->magnetic_field_covariance[4] = var[MAGN_MAG];
+    case 1 :
+      mag->magnetic_field.x = sample[MAGN_MAG][X_AXIS];
+      mag->magnetic_field_covariance[0] = var[MAGN_MAG];
+      mag_unbias->magnetic_field.x = sample[MAGN_MAG][X_AXIS]-bias[MAGN_MAG][X_AXIS];
+      mag_unbias->magnetic_field_covariance[0] = var[MAGN_MAG];
+  }
+
+  // publish;
+  pub_raw.publish(mag);
+  pub_calibrated.publish(mag_unbias);
+}
+
+
 void memsense_imu::IMUBaseNode::outputFilter()
 {
   unsigned int count = filter_.count();
   if ( count != 0 )
   {
     SampleArray resp;
+    const ros::Time stamp = ros::Time::now();
+    const std::string frame_id = frame_id_;
     filter_.median(&resp);
     VarianceTable resp_vars;
     BiasTable resp_biases;
@@ -212,7 +316,8 @@ void memsense_imu::IMUBaseNode::outputFilter()
       for (int j=0; j<NUM_AXES; j++)
         resp_biases[i][j] = biases_[i][j];
     }
-    processData(resp, resp_biases, resp_vars, pub_filtered_raw_, pub_filtered_unbiased_);
+    outputData(resp, resp_biases, resp_vars, stamp, frame_id, pub_filtered_raw_, pub_filtered_unbiased_);
+    outputMAGData(resp, resp_biases, resp_vars, stamp, frame_id, pub_filtered_mag_, pub_filtered_mag_unbiased_);
     filter_.reset();
   }
 }
