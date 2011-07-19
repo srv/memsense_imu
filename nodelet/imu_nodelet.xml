@@ -1,0 +1,9 @@
+<library path="lib/libimu_nodelet">
+  <class name="memsense_imu/imu_nodelet"
+         type="IMUNodelet"
+         base_class_type="nodelet::Nodelet">
+    <description> 
+      Memsense IMU driver nodelet.
+    </description>
+  </class>
+</library>

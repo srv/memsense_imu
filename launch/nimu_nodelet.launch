@@ -1,7 +1,13 @@
 <launch>
 
- <!-- imu_node -->
-  <node pkg="memsense_imu" type="imu_node" name="imu_node" output="screen">
+  <!-- nodelet manager process -->
+  <node pkg="nodelet" type="nodelet" name="imu_nodelet_manager"
+        args="manager" />
+
+  <!-- imu driver nodelet -->
+  <node pkg="nodelet" type="nodelet" name="imu_nodelet"
+        args="load memsense_imu/imu_nodelet imu_nodelet_manager" >
+
     <param name="polling_rate" value="166.666" type="double" />
     <param name="filter_rate"  value="10.0" type="double" />
     <param name="frame_id"     value="imu" type="string" />
@@ -26,5 +32,6 @@
     <param name="mags_range"   value="1.8999999999999999" type="double" />
     <param name="mags_var"     value="0.0" type="double" />
   </node>
-  
+
 </launch>
+
