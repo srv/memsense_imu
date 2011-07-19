@@ -36,6 +36,8 @@ public:
 
   void mean(SampleArray* s);
 
+  void median(SampleArray* s);
+
 private:
 
   unsigned int count_;

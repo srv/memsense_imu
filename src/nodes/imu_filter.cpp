@@ -9,6 +9,10 @@
  */
 
 #include "imu_filter.h"
+<<<<<<< Updated upstream
+=======
+#include <algorithm>
+>>>>>>> Stashed changes
 
 memsense_imu::Filter::Filter()
 : count_(0)
@@ -53,6 +57,30 @@ void memsense_imu::Filter::mean(SampleArray* s)
           mean += samples_[i][j][k];
         mean /= num;
         (*s)[i].push_back(mean);
+      }
+    }
+  }
+}
+
+void memsense_imu::Filter::median(SampleArray* s)
+{
+  for (int i=0; i<NUM_MAGNS; i++)
+  {
+    (*s)[i].clear();
+    for (int j=0; j<NUM_AXES; j++)
+    {
+      const int num = samples_[i][j].size();
+      if(num>0)
+      {
+        std::sort(samples_[i][j].begin(),samples_[i][j].end());
+	const int k = num/2;
+        double median = samples_[i][j][k];
+        if ( (num%2) == 0 )
+        {
+          median += samples_[i][j][k-1];
+          median *= 0.5;
+        }
+        (*s)[i].push_back(median);
       }
     }
   }

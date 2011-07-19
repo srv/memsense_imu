@@ -202,17 +202,17 @@ void memsense_imu::IMUBaseNode::outputFilter()
   unsigned int count = filter_.count();
   if ( count != 0 )
   {
-    SampleArray means;
-    filter_.mean(&means);
-    VarianceTable mean_vars;
-    BiasTable mean_biases;
+    SampleArray resp;
+    filter_.median(&resp);
+    VarianceTable resp_vars;
+    BiasTable resp_biases;
     for (int i=0; i<NUM_MAGNS; i++)
     {
-      mean_vars[i] = vars_[i]/double(count);
+      resp_vars[i] = vars_[i]/double(count);
       for (int j=0; j<NUM_AXES; j++)
-        mean_biases[i][j] = biases_[i][j];
+        resp_biases[i][j] = biases_[i][j];
     }
-    processData(means, mean_biases, mean_vars, pub_filtered_raw_, pub_filtered_unbiased_);
+    processData(resp, resp_biases, resp_vars, pub_filtered_raw_, pub_filtered_unbiased_);
     filter_.reset();
   }
 }
