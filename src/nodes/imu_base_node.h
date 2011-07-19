@@ -54,6 +54,7 @@
 
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
+#include <memsense_imu/ImuMAG.h>
 #include <dynamic_reconfigure/server.h>
 #include <map>
 #include "memsense_imu/IMUDynParamsConfig.h"
@@ -95,6 +96,10 @@ private:
   ros::Publisher pub_unbiased_;
   ros::Publisher pub_filtered_raw_;
   ros::Publisher pub_filtered_unbiased_;
+  ros::Publisher pub_mag_;
+  ros::Publisher pub_mag_unbiased_;
+  ros::Publisher pub_filtered_mag_;
+  ros::Publisher pub_filtered_mag_unbiased_;
   ros::Timer polling_timer_;
   ros::Timer filter_timer_;
   dynamic_reconfigure::Server<memsense_imu::IMUDynParamsConfig> dyn_params_srv_;
@@ -120,11 +125,21 @@ private:
   double filter_rate_;
   bool do_filtering_;
 
-  void processData(const SampleArray& sample,
-                   const BiasTable& bias,
-                   const VarianceTable& var,
-                   const ros::Publisher& pub_raw,
-                   const ros::Publisher& pub_calibrated);
+  void outputData(const SampleArray& sample,
+                  const BiasTable& bias,
+                  const VarianceTable& var,
+                  const ros::Time& stamp,
+                  const std::string& frame_id,
+                  const ros::Publisher& pub_raw,
+                  const ros::Publisher& pub_calibrated);
+
+  void outputMAGData(const SampleArray& sample,
+                     const BiasTable& bias,
+                     const VarianceTable& var,
+                     const ros::Time& stamp,
+                     const std::string& frame_id,
+                     const ros::Publisher& pub_raw,
+                     const ros::Publisher& pub_calibrated);
 
   template <typename T>
   bool updateDynParam(T* param, const T& new_value) const;

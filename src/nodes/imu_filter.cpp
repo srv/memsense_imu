@@ -9,10 +9,8 @@
  */
 
 #include "imu_filter.h"
-<<<<<<< Updated upstream
-=======
 #include <algorithm>
->>>>>>> Stashed changes
+
 
 memsense_imu::Filter::Filter()
 : count_(0)
