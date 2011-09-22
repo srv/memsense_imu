@@ -49,8 +49,8 @@
  *
  */
 
-#ifndef IMU_BASE_NODE_H
-#define IMU_BASE_NODE_H
+#ifndef IMU_NODE_BASE_H
+#define IMU_NODE_BASE_H
 
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
@@ -69,11 +69,11 @@ namespace memsense_imu
 /** IMU Driver class
  *
  */
-class IMUBaseNode
+class IMUNodeBase
 {
 public:
 
-  IMUBaseNode(const ros::NodeHandle& nh,
+  IMUNodeBase(const ros::NodeHandle& nh,
               const ros::NodeHandle& priv = ros::NodeHandle("~") );
 
   /*---------------------------------------------------------------------------
@@ -154,4 +154,4 @@ private:
 
 }
 
-#endif // IMU_BASE_NODE_H
+#endif // IMU_NODE_BASE_H

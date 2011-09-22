@@ -50,7 +50,7 @@ int main(int argc, char **argv)
 
   ros::NodeHandle nh("imu");
 
-  memsense_imu::IMUBaseNode imu_node(nh);
+  memsense_imu::IMUNodeBase imu_node(nh);
 
   // Publishers and advertise topics
   imu_node.advertiseTopics();

@@ -52,7 +52,7 @@
 
 #include "imu_base_node.h"
 
-memsense_imu::IMUBaseNode::IMUBaseNode(const ros::NodeHandle& nh,
+memsense_imu::IMUNodeBase::IMUNodeBase(const ros::NodeHandle& nh,
                                        const ros::NodeHandle& priv)
 : node_(nh),
   priv_(priv),
@@ -62,7 +62,7 @@ memsense_imu::IMUBaseNode::IMUBaseNode(const ros::NodeHandle& nh,
 {}
 
 /*---------------------------------------------------------------------------
-void memsense_imu::IMUBaseNode::initParams()
+void memsense_imu::IMUNodeBase::initParams()
 {
   //TODO add a parameter for the imu_type_ and frame_id
   frame_id_ = "imu";
@@ -85,12 +85,12 @@ void memsense_imu::IMUBaseNode::initParams()
 }
 ----------------------------------------------------------------------------*/
 
-void memsense_imu::IMUBaseNode::initDynParamsSrv()
+void memsense_imu::IMUNodeBase::initDynParamsSrv()
 {
-  dyn_params_srv_.setCallback( boost::bind(&IMUBaseNode::dynReconfigureParams,this,_1,_2) );
+  dyn_params_srv_.setCallback( boost::bind(&IMUNodeBase::dynReconfigureParams,this,_1,_2) );
 }
 
-void memsense_imu::IMUBaseNode::advertiseTopics()
+void memsense_imu::IMUNodeBase::advertiseTopics()
 {
   pub_raw_ = node_.advertise<sensor_msgs::Imu>("data",10);
   pub_unbiased_ = node_.advertise<sensor_msgs::Imu>("data_calibrated",10);
@@ -102,7 +102,7 @@ void memsense_imu::IMUBaseNode::advertiseTopics()
   pub_filtered_mag_unbiased_ = node_.advertise<memsense_imu::ImuMAG>("mag_filtered_calibrated",10);
 }
 
-void memsense_imu::IMUBaseNode::poll()
+void memsense_imu::IMUNodeBase::poll()
 {
   try
   {
@@ -132,7 +132,7 @@ void memsense_imu::IMUBaseNode::poll()
   }
 }
 
-void memsense_imu::IMUBaseNode::outputData(const SampleArray& sample,
+void memsense_imu::IMUNodeBase::outputData(const SampleArray& sample,
                                            const BiasTable& bias,
                                            const VarianceTable& var,
                                            const ros::Time& stamp,
@@ -205,7 +205,7 @@ void memsense_imu::IMUBaseNode::outputData(const SampleArray& sample,
 }
 
 
-void memsense_imu::IMUBaseNode::outputMAGData(const SampleArray& sample,
+void memsense_imu::IMUNodeBase::outputMAGData(const SampleArray& sample,
                                               const BiasTable& bias,
                                               const VarianceTable& var,
                                               const ros::Time& stamp,
@@ -299,7 +299,7 @@ void memsense_imu::IMUBaseNode::outputMAGData(const SampleArray& sample,
 }
 
 
-void memsense_imu::IMUBaseNode::outputFilter()
+void memsense_imu::IMUNodeBase::outputFilter()
 {
   unsigned int count = filter_.count();
   if ( count != 0 )
@@ -323,7 +323,7 @@ void memsense_imu::IMUBaseNode::outputFilter()
 }
 
 template <typename T>
-bool memsense_imu::IMUBaseNode::updateDynParam(T* param, const T& new_value) const
+bool memsense_imu::IMUNodeBase::updateDynParam(T* param, const T& new_value) const
 {
   if ( *param != new_value )
   {
@@ -334,7 +334,7 @@ bool memsense_imu::IMUBaseNode::updateDynParam(T* param, const T& new_value) con
     return false;
 }
 
-void memsense_imu::IMUBaseNode::dynReconfigureParams(memsense_imu::IMUDynParamsConfig& params,
+void memsense_imu::IMUNodeBase::dynReconfigureParams(memsense_imu::IMUDynParamsConfig& params,
                                                      uint32_t level)
 {
   try
@@ -407,7 +407,7 @@ void memsense_imu::IMUBaseNode::dynReconfigureParams(memsense_imu::IMUDynParamsC
           else
           {
             polling_timer_ = node_.createTimer(ros::Duration(1.0/polling_rate_),
-                                               boost::bind(&IMUBaseNode::poll,this));
+                                               boost::bind(&IMUNodeBase::poll,this));
           }
         }
       }
@@ -430,7 +430,7 @@ void memsense_imu::IMUBaseNode::dynReconfigureParams(memsense_imu::IMUDynParamsC
           else
           {
             filter_timer_ = node_.createTimer(ros::Duration(1.0/filter_rate_),
-                                              boost::bind(&IMUBaseNode::outputFilter,this));
+                                              boost::bind(&IMUNodeBase::outputFilter,this));
           }
           do_filtering_ = true;
         }
@@ -456,7 +456,7 @@ void memsense_imu::IMUBaseNode::dynReconfigureParams(memsense_imu::IMUDynParamsC
 }
 
 std::map<std::string,mems::E_DeviceType>
-memsense_imu::IMUBaseNode::define_type_names()
+memsense_imu::IMUNodeBase::define_type_names()
 {
   std::map<std::string,mems::E_DeviceType> m;
   m["nIMU_3temp"] = mems::NIMU_3TEMP;
@@ -464,9 +464,9 @@ memsense_imu::IMUBaseNode::define_type_names()
 }
 
 const std::map<std::string,mems::E_DeviceType>
-memsense_imu::IMUBaseNode::IMU_TYPE_NAMES_ = define_type_names();
+memsense_imu::IMUNodeBase::IMU_TYPE_NAMES_ = define_type_names();
 
-mems::E_DeviceType memsense_imu::IMUBaseNode::nameToDeviceType(const std::string& name) const
+mems::E_DeviceType memsense_imu::IMUNodeBase::nameToDeviceType(const std::string& name) const
 {
   std::map<std::string, mems::E_DeviceType>::const_iterator it = IMU_TYPE_NAMES_.find(name);
   if (it==IMU_TYPE_NAMES_.end())

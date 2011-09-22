@@ -56,7 +56,7 @@ public:
   IMUNodelet();
 private:
   virtual void onInit();
-  boost::shared_ptr<memsense_imu::IMUBaseNode> imu_node_;
+  boost::shared_ptr<memsense_imu::IMUNodeBase> imu_node_;
 };
 
 
@@ -70,7 +70,7 @@ void IMUNodelet::onInit()
 {
   ros::NodeHandle nh(getNodeHandle(),"imu");
   ros::NodeHandle priv(getPrivateNodeHandle());
-  imu_node_.reset(new memsense_imu::IMUBaseNode(nh,priv));
+  imu_node_.reset(new memsense_imu::IMUNodeBase(nh,priv));
 
   // Publishers and advertise topics
   imu_node_->advertiseTopics();
