@@ -45,7 +45,7 @@
 #include <pluginlib/class_list_macros.h>
 #include <nodelet/nodelet.h>
 
-#include "imu_base_node.h"
+#include "imu_node_base.h"
 
 
 /** Nodelet interface for IMU driver.

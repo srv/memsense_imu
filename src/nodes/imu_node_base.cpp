@@ -50,7 +50,7 @@
  */
 
 
-#include "imu_base_node.h"
+#include "imu_node_base.h"
 
 memsense_imu::IMUNodeBase::IMUNodeBase(const ros::NodeHandle& nh,
                                        const ros::NodeHandle& priv)

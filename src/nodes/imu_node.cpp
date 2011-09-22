@@ -1,5 +1,5 @@
-/** @file
- *
+/**
+ * @file
  * @brief ROS Memsense IMU generic driver (node version)
  *
  * @par Advertises
@@ -41,7 +41,7 @@
  */
 
 
-#include "imu_base_node.h"
+#include "imu_node_base.h"
 
 int main(int argc, char **argv)
 {
