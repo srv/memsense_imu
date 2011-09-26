@@ -48,9 +48,9 @@ int main(int argc, char **argv)
   // ROS initialization
   ros::init(argc, argv, "imu_node");
 
-  ros::NodeHandle nh("imu");
+  ros::NodeHandle node("imu");
 
-  memsense_imu::IMUNodeBase imu_node(nh);
+  memsense_imu::IMUNodeBase imu_node(node);
 
   // Publishers and advertise topics
   imu_node.advertiseTopics();

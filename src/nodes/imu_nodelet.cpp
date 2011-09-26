@@ -72,9 +72,9 @@ memsense_imu::IMUNodelet::IMUNodelet()
  */
 void memsense_imu::IMUNodelet::onInit()
 {
-  ros::NodeHandle nh(getNodeHandle(),"imu");
+  ros::NodeHandle node(getNodeHandle(),"imu");
   ros::NodeHandle priv(getPrivateNodeHandle());
-  imu_node_.reset(new memsense_imu::IMUNodeBase(nh,priv));
+  imu_node_.reset(new memsense_imu::IMUNodeBase(node,priv));
 
   // Publishers and advertise topics
   imu_node_->advertiseTopics();

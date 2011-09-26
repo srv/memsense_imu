@@ -52,9 +52,9 @@
 
 #include "imu_node_base.h"
 
-memsense_imu::IMUNodeBase::IMUNodeBase(const ros::NodeHandle& nh,
+memsense_imu::IMUNodeBase::IMUNodeBase(const ros::NodeHandle& node,
                                        const ros::NodeHandle& priv)
-: node_(nh),
+: node_(node),
   priv_(priv),
   dyn_params_srv_(priv),
   port_(""), imu_type_(mems::DT_INVALID),
