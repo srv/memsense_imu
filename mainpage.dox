@@ -2,25 +2,44 @@
 \mainpage
 \htmlinclude manifest.html
 
-\b memsense_imu is ... 
+This is a ROS driver for the set of Inertial Measurement Units (IMU's)
+manufactured by Memsense. It is based on the libraries provided by Memsense 
+(with minor changes to work under GNU/Linux). Both node and nodelet versions
+of the driver are provided.
 
-<!-- 
-Provide an overview of your package.
--->
+For debugging purposes, a port of the console utility provided by Memsense 
+is included. It is ROS independent and includes the minimum changes needed to
+run under GNU/Linux.
+
+The driver was developed for the nIMU series, but adding support for other 
+models should be as easy as extend an enumeration.
+
+
+\section messages Messages
+
+The nIMU provides also magnetometer readings for the three axis, currently not
+included in the ROS standard Imu sensor message. Hence, a new message is also
+included adding this magnitude. Even though temperature readings are also 
+available, they are not included in the new message. 
 
 
 \section codeapi Code API
 
-<!--
-Provide links to specific auto-generated API documentation within your
-package that is of particular interest to a reader. Doxygen will
-document pretty much every part of your code, so do your best here to
-point the reader to the actual API.
+The library driver is build as two layers:
+  - The IMUDataUtils library, a port of the Memsense library providing readings 
+    from the IMU through the serial port, and decoding of the samples.
+    - The major changes are in the SerialComm class, that has been rewritten 
+      for Unix-alike systems.
+    .
+  - The IMUSampler class wraps the library providing a simpler API 
+    to get readings from the unit (since Memsense's code is quite dirty).
 
-If your codebase is fairly large or has different sets of APIs, you
-should use the doxygen 'group' tag to keep these APIs together. For
-example, the roscpp documentation has 'libros' group.
--->
+The ROS interface is provided in a base class using the sampler,
+from which the node and nodelet versions are derived.
+
+The standalone data console application is a fixed version of the one shipped 
+with Memesense's library. It is included in the package to prevent loosing the 
+fixed code.
 
 
 */
