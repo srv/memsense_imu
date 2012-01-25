@@ -36,4 +36,5 @@ gencfg()
 
 add_subdirectory(src/IMUDataUtils)
 add_subdirectory(src/IMUSampler)
+add_subdirectory(src/IDC)
 add_subdirectory(src/nodes)
