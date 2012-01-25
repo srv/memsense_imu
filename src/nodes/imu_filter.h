@@ -1,5 +1,5 @@
-/** @file
- *
+/**
+ * @file
  * @author Joan Pau Beltran
  * @brief ROS Memsense IMU filter presentation.
  *
@@ -16,11 +16,12 @@
 namespace memsense_imu
 {
 
-/** IMU sample filter.
+/**
+ * @brief IMU sample filter.
  *
  * Filter to be used with the Memsense IMU node.
- * IMU samples are stored in vectors, and filtered with the desired method
- * on demand.
+ * IMU samples are stored in vectors,
+ * and filtered with the desired method on demand.
  */
 class Filter
 {

@@ -1,6 +1,6 @@
 /**
- * @file IMUSampler.h
- * @brief Sampler for the Memsense family of IMUs, presentation
+ * @file
+ * @brief Sampler for the Memsense family of IMUs, presentation.
  * @author Joan Pau Beltran
  * @date 2011-02-08
  *
@@ -23,7 +23,7 @@ namespace mems
 {
 
 /**
- * @brief Exception to handle IMU errors and exceptions
+ * @brief Exception to handle IMU errors and exceptions.
  */
 class IMUError : public std::runtime_error
 {
@@ -35,7 +35,7 @@ public:
 };
 
 /**
- * @brief IMU sampler class for the Memsense IMU family
+ * @brief IMU sampler class for the Memsense IMU family.
  */
 class IMUSampler
 {

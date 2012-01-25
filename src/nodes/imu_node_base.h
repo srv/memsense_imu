@@ -1,6 +1,6 @@
-/** @file
- *
- * @brief ROS Memsense IMU generic driver presentation.
+/**
+ * @file
+ * @brief ROS Memsense IMU generic driver implementation.
  *
  * This is a ROS generic driver for inertial measurement units (IMUs)
  * provided by Memsense. It uses Memsense' libraries to handle IMU's output
@@ -13,40 +13,50 @@
  *
  * @par Advertises
  *
- * - @b imu/data topic (sensor_msgs/Imu) IMU's raw data
+ * - @b imu/data topic (sensor_msgs/Imu) IMU's raw data.
  *
  * - @b imu/data_calibrated topic (sensor_msgs/Imu) Calibrated (bias removed)
- *   IMU data
+ *   IMU data.
  *
  * - @b imu/data_filtered topic (sensor_msgs/Imu) IMU's filtered output
- *  (mean value every sec seconds)
+ *  (mean value every sec seconds).
  *
  * - @b imu/data_filtered_calibrated topic (sensor_msgs/Imu) Calibrated (bias removed)
- *   filtered (mean every sec seconds) IMU data
+ *   filtered (mean every sec seconds) IMU data.
+ *
+ * - @b imu/mag topic (memsense_imu/ImuMAG) IMU's raw data with magnetic field.
+ *
+ * - @b imu/mag_calibrated topic (memsense_imu/ImuMAG) Calibrated (bias removed)
+ *   IMU data with magnetic field.
+ *
+ * - @b imu/mag_filtered topic (memsense_imu/ImuMAG) IMU's filtered output
+ *   with magnetic field (mean value every sec seconds).
+ *
+ * - @b imu/mag_filtered_calibrated topic (memsense_imu/ImuMAG) Calibrated (bias removed)
+ *   filtered (mean every sec seconds) IMU data with magnetic field.
  *
  * @par Parameters
  *
- * - @b ~imu_type Memsense device type (default nIMU_3temp)
+ * - @b ~imu_type Memsense device type (default nIMU_3temp).
  * 
- * - @b ~gyro_range gyroscop's range (default 150.0 degrees per second)
- * - @b ~accel_range accelerometer range (default 2.0 g's)
- * - @b ~mag_range magnetometer range (default 1.9 gauss)
+ * - @b ~gyro_range gyroscop's range (default 150.0 degrees per second).
+ * - @b ~accel_range accelerometer range (default 2.0 g's).
+ * - @b ~mag_range magnetometer range (default 1.9 gauss).
  
- * - @b ~serial_port Serial port device file name (default /dev/ttyUSB0)
+ * - @b ~serial_port Serial port device file name (default /dev/ttyUSB0).
  
- * - @b ~gyro_var gyroscope's variance (default 0.0)
- * - @b ~accel_var accelerometer's variance (default 0.0)
- * - @b ~mag_var magnetometer's variance (default 0.0)
+ * - @b ~gyro_var gyroscope's variance (default 0.0).
+ * - @b ~accel_var accelerometer's variance (default 0.0).
+ * - @b ~mag_var magnetometer's variance (default 0.0).
  * 
- * - @b ~gyro_bias_(x|y|z) gyroscope's bias in each axis (default 0.0)
- * - @b ~accel_bias_(x|y|z) accelerometer's bias in each axis (default 0.0)
- * - @b ~mag_bias_(x|y|z) magnetometer's bias in each axis (default 0.0)
+ * - @b ~gyro_bias_(x|y|z) gyroscope's bias in each axis (default 0.0).
+ * - @b ~accel_bias_(x|y|z) accelerometer's bias in each axis (default 0.0).
+ * - @b ~mag_bias_(x|y|z) magnetometer's bias in each axis (default 0.0).
  * 
- * - @b ~filter_rate filtered output rate (IMU samples in the interval are collected
- *   and the output is its mean)
+ * - @b ~filter_rate filtered output rate (IMU samples in the interval
+ *      are collected and the output is its mean).
  * 
- * - @b ~frame_id frame identifier for message header
- *
+ * - @b ~frame_id frame identifier for message header.
  */
 
 #ifndef IMU_NODE_BASE_H
@@ -66,8 +76,8 @@
 namespace memsense_imu
 {
 
-/** IMU Driver class
- *
+/**
+ * @brief ROS interface class for IMU driver.
  */
 class IMUNodeBase
 {
@@ -90,40 +100,40 @@ public:
 
 private:
 
-  ros::NodeHandle node_;
-  ros::NodeHandle priv_;
-  ros::Publisher pub_raw_;
-  ros::Publisher pub_unbiased_;
-  ros::Publisher pub_filtered_raw_;
-  ros::Publisher pub_filtered_unbiased_;
-  ros::Publisher pub_mag_;
-  ros::Publisher pub_mag_unbiased_;
-  ros::Publisher pub_filtered_mag_;
-  ros::Publisher pub_filtered_mag_unbiased_;
-  ros::Timer polling_timer_;
-  ros::Timer filter_timer_;
-  dynamic_reconfigure::Server<memsense_imu::IMUDynParamsConfig> dyn_params_srv_;
+  ros::NodeHandle node_; //!< IMU nampespace node handle
+  ros::NodeHandle priv_; //!< Private nampespace node handle
+  ros::Publisher pub_raw_;               //!< Raw standard IMU data publisher.
+  ros::Publisher pub_unbiased_;          //!< Calibrated standard IMU data publisher.
+  ros::Publisher pub_filtered_raw_;      //!< Filtered standard IMU data publisher.
+  ros::Publisher pub_filtered_unbiased_; //!< Calibrated and filtered standard IMU data publisher.
+  ros::Publisher pub_mag_;                   //!< Raw standard IMU data publisher.
+  ros::Publisher pub_mag_unbiased_;          //!< Calibrated custom MAG data publisher.
+  ros::Publisher pub_filtered_mag_;          //!< Filtered custom MAG data publisher.
+  ros::Publisher pub_filtered_mag_unbiased_; //!< Calibrated and filtered custom MAG data publisher.
+  ros::Timer polling_timer_; //!< Polling timer.
+  ros::Timer filter_timer_;  //!< Output filter timer.
+  dynamic_reconfigure::Server<memsense_imu::IMUDynParamsConfig> dyn_params_srv_; //!< Dynamic parameter server.
   
-  std::string frame_id_;
+  std::string frame_id_; //!< IMU frame identifier.
   
-  mems::IMUSampler sampler_;
+  mems::IMUSampler sampler_; //!< IMU sampler.
   
-  std::string port_;
-  mems::E_DeviceType imu_type_;
-  double ranges_[NUM_MAGNS];
-  VarianceTable vars_;
-  BiasTable biases_;
+  std::string port_;            //!< Serial port name.
+  mems::E_DeviceType imu_type_; //!< Memsense IMU device type.
+  double ranges_[NUM_MAGNS];    //!< Magnitude ranges (implicitly set the units).
+  VarianceTable vars_;          //!< Magnitude variances.
+  BiasTable biases_;            //!< Magnitude biases in each axis.
   
-  bool sampler_ready_;
-  bool parser_ok_;
-  bool port_ok_;
+  bool sampler_ready_; //!< sampler is ready when port is ok and parser is ok.
+  bool parser_ok_;     //!< sampler parser initialized.
+  bool port_ok_;       //!< sampler port opened.
 
-  double polling_rate_;
+  double polling_rate_; //!< desired polling rate.
 
-  Filter filter_;
+  Filter filter_; //!< IMU sample filter.
 
-  double filter_rate_;
-  bool do_filtering_;
+  double filter_rate_; //!< Output filter rate.
+  bool do_filtering_;  //!< Filtering enabled.
 
   void outputData(const SampleArray& sample,
                   const BiasTable& bias,

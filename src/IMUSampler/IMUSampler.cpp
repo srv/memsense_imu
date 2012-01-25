@@ -1,6 +1,6 @@
 /**
- * @file IMUSampler.cpp
- * @brief Sampler for the Memsense family of IMUs, implementation
+ * @file
+ * @brief Sampler for the Memsense family of IMUs, implementation.
  * @author Joan Pau Beltran
  * @date 2011-02-08
  *
@@ -15,7 +15,8 @@
 #include "IMUDataUtils/SDTDefaultPre.h"  // data transform (conversion) to volts
 #include "IMUDataUtils/CommonUtils.h"    // common utilities such as string conversions of device type names
 
-/** Constructor
+/**
+ * @brief Constructor.
  * @return
  */
 mems::IMUSampler::IMUSampler()
@@ -25,18 +26,20 @@ mems::IMUSampler::IMUSampler()
 {
 }
 
-/** Initialize the parser to process the data read from the IMU
+/**
+ * @brief Initialize the parser to process the data read from the IMU.
+ * @param device_type Memsense IMU type identifier.
+ * @param gyro_range gyroscope measurement range (degrees/s).
+ * @param accel_range accelerometer measurement range (g/s).
+ * @param mag_range magnetometer measurement range (gauss).
+ * @param hig_range hi-g measurement range (?).
+ *
  * An internal parser is created by this function. It should be called before
  * any read trial. Device type should be known, as well as measurement ranges.
  * Number of sensors is inferred from the device type.
  * Magnitude ranges not common to all IMUs (temperatures, hi-g) are optional.
  * By default the internal transform is set to output real values in engineering
  * units.
- * @param device_type Memsense IMU type identifier
- * @param gyro_range gyroscope measurement range (degrees/s)
- * @param accel_range accelerometer measurement range (g/s)
- * @param mag_range magnetometer measurement range (gauss)
- * @param hig_range hi-g measurement range (?)
  */
 void mems::IMUSampler::initParser(E_DeviceType device_type, double gyro_range,
                                   double accel_range, double mag_range, double hig_range)
@@ -72,8 +75,8 @@ void mems::IMUSampler::initParser(E_DeviceType device_type, double gyro_range,
     throw IMUError("Error initializing parser for device type " + device_type_name_);
 }
 
-/** Clean up parser's internal transform and delete current parser
- *
+/**
+ * @brief Clean up parser's internal transform and delete current parser.
  */
 void mems::IMUSampler::deleteParser()
 {
@@ -85,10 +88,12 @@ void mems::IMUSampler::deleteParser()
   }
 }
 
-/** Set the desired output format
- * Sets the parser's internal transform according to the desired format
+/**
+ * @brief Set the desired output format.
  * @param format output data in ENGINEERING UNITS (deg/sec, g, gauss) or VOLTS.
- *               Only affects getDataReal().
+ *
+ * Sets the parser's internal transform according to the desired format
+ * (only affects getDataReal()).
  */
 void mems::IMUSampler::setFormat(E_DataFormatType format)
 {
@@ -110,23 +115,27 @@ void mems::IMUSampler::setFormat(E_DataFormatType format)
   }
 }
 
-/** Get the current format
- * @return the current format.
+/**
+ * @brief Get the current format.
+ * @return current format.
  */
 mems::E_DataFormatType mems::IMUSampler::getFormat() const
 {
   return data_format_;
 }
 
-/** Get the current device name as string
- * @return the device type name as string.
+/**
+ * @brief Get the current device name as string.
+ * @return device type name as string.
  */
 std::string mems::IMUSampler::getDeviceName() const
 {
   return device_type_name_;
 }
 
-/** Open the serial port device file for communication
+/**
+ * @brief Open the serial port device file for communication.
+ *
  * Opens the serial device and configure it following Memsense specifications.
  * On errors an exception is thrown.
  */
@@ -165,7 +174,9 @@ void mems::IMUSampler::openComm(std::string device_name, unsigned long baud_rate
   }
 }
 
-/** Closes the serial communication device (if it is already open)
+/**
+ * @brief Closes the serial communication device (if it is already open).
+ *
  * On errors an exception is thrown.
  */
 void mems::IMUSampler::closeComm()
@@ -180,18 +191,21 @@ void mems::IMUSampler::closeComm()
   }
 }
 
-/** Get the name of the serial port device file
- * @return serial port device name (including full path)
+/**
+ * @brief Get the name of the serial port device file.
+ * @return serial port device name (including full path).
  */
 std::string mems::IMUSampler::getCommName() const
 {
   return device_comm_name_;
 }
 
-/** Destructor
+/**
+ * @brief Destructor.
+ * @return
+ *
  * Delete the internal parser (and its internal transform) if needed,
  * and close serial port if it is open.
- * @return
  */
 mems::IMUSampler::~IMUSampler()
 {
@@ -205,14 +219,15 @@ mems::IMUSampler::~IMUSampler()
   }
 }
 
-/** Poll the device to receive a sample
+/**
+ * @brief Poll the device to receive a sample.
+ * @return whether a sample was found in the bytes read from the serial port.
+ *
  * When the checksum is not valid an exception is thrown. 
  * Since reading failures are quite common due to
  * lack of synchronization, not finding a sample in the bytes read from the 
  * serial port does not throw an exception, but the return value is false.
  * 
- * @return whether a sample was found in the bytes read from the serial port
- *
  * @todo Check if buffer should be flushed before reading the sample.
  */
 bool mems::IMUSampler::readSample()
@@ -244,17 +259,19 @@ void fillHigData(const std::vector<T>& hig_data, std::vector<T>* hig);
 template<typename T>
 void fillTempData(const std::vector<T>& temp_data, std::vector<T>* temp);
 
-/** Parse last read sample's values as floats (engineering units or volts)
+/**
+ * @brief Parse last read sample's values as floats (engineering units or volts).
+ * @param gyro  gyroscope measurements (deg/s or volts).
+ * @param accel accelerometer measurements (g or volts).
+ * @param mag magnetometer measurements(gauss or volts).
+ * @param temp temperature measurements (ºC or volts).
+ * @param hig hi-g accelerometer measurements (? or volts).
+ *
  * Parse the last read sample to extract received values as engineering
  * units or volts depending on the format set by initParser() or setFormat().
  * If some argument is null the values of the respective magnitude in the
  * sample (if any) are ignored.
- * On errors (e.g. bad or no data received from the IMU) it throws an exception
- * @param gyro  gyroscope measurements (deg/s or volts)
- * @param accel accelerometer measurements (g or volts)
- * @param mag magnetometer measurements(gauss or volts)
- * @param temp temperature measurements (ºC or volts)
- * @param hig hi-g accelerometer measurements (? or volts)
+ * On errors (e.g. bad or no data received from the IMU) it throws an exception.
  */
 void mems::IMUSampler::getDataReal(std::vector<double>* gyro,
                                    std::vector<double>* accel,
@@ -290,16 +307,18 @@ void mems::IMUSampler::getDataReal(std::vector<double>* gyro,
   }
 }
 
-/** Parse last read sample's values as counts (short integers)
+/**
+ * @brief Parse last read sample's values as counts (short integers).
+ * @param gyro  gyroscope measurements (DC bits).
+ * @param accel accelerometer measurements (DC bits).
+ * @param mag magnetometer measurements(DC bits).
+ * @param temp temperature measurements (DC bits).
+ * @param hig hi-g accelerometer measurements (DC bits).
+ *
  * Parse the last read sample to extract received values as 16 bit integers
  * If some argument is null the values of the respective magnitude in the
  * sample (if any) are ignored.
- * On errors (e.g. bad or no data received from the IMU) it throws an exception
- * @param gyro  gyroscope measurements (DC bits)
- * @param accel accelerometer measurements (DC bits)
- * @param mag magnetometer measurements(DC bits)
- * @param temp temperature measurements (DC bits)
- * @param hig hi-g accelerometer measurements (DC bits)
+ * On errors (e.g. bad or no data received from the IMU) it throws an exception.
  */
 void mems::IMUSampler::getDataCounts(std::vector<short>* gyro,
                                      std::vector<short>* accel,
@@ -317,16 +336,18 @@ void mems::IMUSampler::getDataCounts(std::vector<short>* gyro,
 }
 
 
-/** Parse last read sample's values as a raw burst of bytes.
+/**
+ * @brief Parse last read sample's values as a raw burst of bytes.
+ * @param gyro  gyroscope measurements (bytes).
+ * @param accel accelerometer measurements (bytes).
+ * @param mag magnetometer measurements(bytes).
+ * @param temp temperature measurements (bytes).
+ * @param hig hi-g accelerometer measurements (bytes).
+ *
  * Parse the last read sample to extract received values as bytes.
  * If some argument is null the values of the respective magnitude in the
  * sample (if present) are ignored.
- * On errors (e.g. bad or no data received from the IMU) it throws an exception
- * @param gyro  gyroscope measurements (bytes)
- * @param accel accelerometer measurements (bytes)
- * @param mag magnetometer measurements(bytes)
- * @param temp temperature measurements (bytes)
- * @param hig hi-g accelerometer measurements (bytes)
+ * On errors (e.g. bad or no data received from the IMU) it throws an exception.
  */
  void mems::IMUSampler::getDataBytes(std::vector<unsigned char>* gyro,
                                     std::vector<unsigned char>* accel,

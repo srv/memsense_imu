@@ -1,20 +1,39 @@
 /**
  * @file
- * @brief ROS Memsense IMU generic driver (nodelet version).
+ * @brief ROS Memsense IMU generic driver implementation.
+ *
+ * This is a ROS generic driver for inertial measurement units (IMUs)
+ * provided by Memsense. It uses Memsense' libraries to handle IMU's output
+ * on the serial port (with some errors fixed, and a rewritten serial port
+ * class for Unix alike systems).
+ * Output units are the same in which the range is specified.
+ * The correct ranges for the device and its biases and variances should
+ * be set.
+ * A filter is implemented in the driver too.
  *
  * @par Advertises
  *
- * - @b imu/data topic (sensor_msgs/Imu)
- *   IMU's raw data.
+ * - @b imu/data topic (sensor_msgs/Imu) IMU's raw data.
  *
- * - @b imu/data_calibrated topic (sensor_msgs/Imu)
- *   Calibrated (bias removed) IMU data.
+ * - @b imu/data_calibrated topic (sensor_msgs/Imu) Calibrated (bias removed)
+ *   IMU data.
  *
- * - @b imu/data_filtered topic (sensor_msgs/Imu)
- *   IMU's filtered output (mean value every sec seconds).
+ * - @b imu/data_filtered topic (sensor_msgs/Imu) IMU's filtered output
+ *  (mean value every sec seconds).
  *
- * - @b imu/data_filtered_calibrated topic (sensor_msgs/Imu)
- *   Calibrated (bias removed) filtered (mean every sec seconds) IMU data.
+ * - @b imu/data_filtered_calibrated topic (sensor_msgs/Imu) Calibrated (bias removed)
+ *   filtered (mean every sec seconds) IMU data.
+ *
+ * - @b imu/mag topic (memsense_imu/ImuMAG) IMU's raw data with magnetic field.
+ *
+ * - @b imu/mag_calibrated topic (memsense_imu/ImuMAG) Calibrated (bias removed)
+ *   IMU data with magnetic field.
+ *
+ * - @b imu/mag_filtered topic (memsense_imu/ImuMAG) IMU's filtered output
+ *   with magnetic field (mean value every sec seconds).
+ *
+ * - @b imu/mag_filtered_calibrated topic (memsense_imu/ImuMAG) Calibrated (bias removed)
+ *   filtered (mean every sec seconds) IMU data with magnetic field.
  *
  * @par Parameters
  *
@@ -34,11 +53,10 @@
  * - @b ~accel_bias_(x|y|z) accelerometer's bias in each axis (default 0.0).
  * - @b ~mag_bias_(x|y|z) magnetometer's bias in each axis (default 0.0).
  *
- * - @b ~filter_rate filtered output rate
- *   (IMU samples in the interval are collected and the output is its mean).
+ * - @b ~filter_rate filtered output rate (IMU samples in the interval
+ *      are collected and the output is its mean).
  *
  * - @b ~frame_id frame identifier for message header.
- *
  */
 
 
@@ -51,7 +69,8 @@
 namespace memsense_imu
 {
 
-/** Nodelet interface for IMU driver.
+/**
+ * @brief Nodelet interface for IMU driver.
  */
 class IMUNodelet: public nodelet::Nodelet
 {
@@ -64,11 +83,16 @@ private:
 
 } // namespace
 
+/**
+ * @brief Default constructor (doing nothing).
+ * @return
+ */
 memsense_imu::IMUNodelet::IMUNodelet()
 {}
 
-/** Nodelet initialization.
- *  @note Must return immediately.
+/**
+ * @brief Nodelet initialization.
+ * @note Must return immediately.
  */
 void memsense_imu::IMUNodelet::onInit()
 {

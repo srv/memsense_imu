@@ -1,28 +1,34 @@
-/** @file
- *
+/**
+ * @file
  * @author Joan Pau Beltran
  * @brief ROS Memsense IMU filter implementation.
- *
- * This is a filter to be used with the Memsense IMU node.
- * IMU samples are stored in vectors, and filtered with the desired method
- * on demand.
  */
 
 #include "imu_filter.h"
 #include <algorithm>
 
-
+/**
+ * Default constructor (doing nothing).
+ * @return
+ */
 memsense_imu::Filter::Filter()
 : count_(0)
 {}
 
-
+/**
+ * Get the number of samples accumulated by the filter.
+ * @return number of samples in internal buffer.
+ */
 unsigned int memsense_imu::Filter::count()
 {
   return count_;
 }
 
 
+/**
+ * @brief Add a set of samples to the filter.
+ * @param s array of new samples to add to the internal buffer.
+ */
 void memsense_imu::Filter::update(const SampleArray& s)
 {
   for(int i=0; i<NUM_MAGNS; i++)
@@ -32,6 +38,9 @@ void memsense_imu::Filter::update(const SampleArray& s)
 }
 
 
+/**
+ * @brief Clear the internal buffer.
+ */
 void memsense_imu::Filter::reset()
 {
   for (int i=0; i<NUM_MAGNS; i++)
@@ -40,6 +49,11 @@ void memsense_imu::Filter::reset()
   count_ = 0;
 }
 
+
+/**
+ * @brief Get the mean of the samples currently stored by the buffer.
+ * @param s array of samples to be filled with the mean values.
+ */
 void memsense_imu::Filter::mean(SampleArray* s)
 {
   for (int i=0; i<NUM_MAGNS; i++)
@@ -60,6 +74,10 @@ void memsense_imu::Filter::mean(SampleArray* s)
   }
 }
 
+/**
+ * @brief Get the median of the samples currently stored by the buffer.
+ * @param s array of samples to be filled with the median values.
+ */
 void memsense_imu::Filter::median(SampleArray* s)
 {
   for (int i=0; i<NUM_MAGNS; i++)

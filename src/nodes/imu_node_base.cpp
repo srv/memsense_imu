@@ -1,5 +1,5 @@
-/** @file
- *
+/**
+ * @file
  * @brief ROS Memsense IMU generic driver implementation.
  *
  * This is a ROS generic driver for inertial measurement units (IMUs)
@@ -13,45 +13,61 @@
  *
  * @par Advertises
  *
- * - @b imu/data topic (sensor_msgs/Imu) IMU's raw data
+ * - @b imu/data topic (sensor_msgs/Imu) IMU's raw data.
  *
  * - @b imu/data_calibrated topic (sensor_msgs/Imu) Calibrated (bias removed)
- *   IMU data
+ *   IMU data.
  *
  * - @b imu/data_filtered topic (sensor_msgs/Imu) IMU's filtered output
- *  (mean value every sec seconds)
+ *  (mean value every sec seconds).
  *
  * - @b imu/data_filtered_calibrated topic (sensor_msgs/Imu) Calibrated (bias removed)
- *   filtered (mean every sec seconds) IMU data
+ *   filtered (mean every sec seconds) IMU data.
+ *
+ * - @b imu/mag topic (memsense_imu/ImuMAG) IMU's raw data with magnetic field.
+ *
+ * - @b imu/mag_calibrated topic (memsense_imu/ImuMAG) Calibrated (bias removed)
+ *   IMU data with magnetic field.
+ *
+ * - @b imu/mag_filtered topic (memsense_imu/ImuMAG) IMU's filtered output
+ *   with magnetic field (mean value every sec seconds).
+ *
+ * - @b imu/mag_filtered_calibrated topic (memsense_imu/ImuMAG) Calibrated (bias removed)
+ *   filtered (mean every sec seconds) IMU data with magnetic field.
  *
  * @par Parameters
  *
- * - @b ~imu_type Memsense device type (default nIMU_3temp)
+ * - @b ~imu_type Memsense device type (default nIMU_3temp).
  * 
- * - @b ~gyro_range gyroscop's range (default 150.0 degrees per second)
- * - @b ~accel_range accelerometer range (default 2.0 g's)
- * - @b ~mag_range magnetometer range (default 1.9 gauss)
+ * - @b ~gyro_range gyroscop's range (default 150.0 degrees per second).
+ * - @b ~accel_range accelerometer range (default 2.0 g's).
+ * - @b ~mag_range magnetometer range (default 1.9 gauss).
  
- * - @b ~serial_port Serial port device file name (default /dev/ttyUSB0)
+ * - @b ~serial_port Serial port device file name (default /dev/ttyUSB0).
  
- * - @b ~gyro_var gyroscope's variance (default 0.0)
- * - @b ~accel_var accelerometer's variance (default 0.0)
- * - @b ~mag_var magnetometer's variance (default 0.0)
+ * - @b ~gyro_var gyroscope's variance (default 0.0).
+ * - @b ~accel_var accelerometer's variance (default 0.0).
+ * - @b ~mag_var magnetometer's variance (default 0.0).
  * 
- * - @b ~gyro_bias_(x|y|z) gyroscope's bias in each axis (default 0.0)
- * - @b ~accel_bias_(x|y|z) accelerometer's bias in each axis (default 0.0)
- * - @b ~mag_bias_(x|y|z) magnetometer's bias in each axis (default 0.0)
+ * - @b ~gyro_bias_(x|y|z) gyroscope's bias in each axis (default 0.0).
+ * - @b ~accel_bias_(x|y|z) accelerometer's bias in each axis (default 0.0).
+ * - @b ~mag_bias_(x|y|z) magnetometer's bias in each axis (default 0.0).
  * 
- * - @b ~filter_rate filtered output rate (IMU samples in the interval are collected
- *   and the output is its mean)
+ * - @b ~filter_rate filtered output rate (IMU samples in the interval
+ *      are collected and the output is its mean).
  * 
- * - @b ~frame_id frame identifier for message header
- *
+ * - @b ~frame_id frame identifier for message header.
  */
 
 
 #include "imu_node_base.h"
 
+/**
+ * @brief Default empty constructor.
+ * @param node IMU namespace node handle.
+ * @param priv private namespace node handle.
+ * @return
+ */
 memsense_imu::IMUNodeBase::IMUNodeBase(const ros::NodeHandle& node,
                                        const ros::NodeHandle& priv)
 : node_(node),
@@ -61,35 +77,17 @@ memsense_imu::IMUNodeBase::IMUNodeBase(const ros::NodeHandle& node,
   polling_rate_(0.0), filter_rate_(0.0)
 {}
 
-/*---------------------------------------------------------------------------
-void memsense_imu::IMUNodeBase::initParams()
-{
-  //TODO add a parameter for the imu_type_ and frame_id
-  frame_id_ = "imu";
-  imu_type_ = mems::NIMU_3TEMP;
-
-  const std::string MAGN_NAMES[NUM_MAGNS] = {"gyro","accel","mag"};
-  const double default_ranges[NUM_MAGNS] = {150.0,2.0,1.9};
-  const double default_vars[NUM_MAGNS] = {0.0,0.0,0.0};
-  const double default_bias = 0.0;
-  for (int i=0; i<NUM_MAGNS; i++)
-  {
-    priv_.param(MAGN_NAMES[i]+"_range",ranges_[i],default_ranges[i]);
-    priv_.param(MAGN_NAMES[i]+"_var",vars_[i],default_vars[i]);
-    priv_.param(MAGN_NAMES[i]+"_bias_x",biases_[i][X_AXIS],default_bias);
-    priv_.param(MAGN_NAMES[i]+"_bias_y",biases_[i][Y_AXIS],default_bias);
-    priv_.param(MAGN_NAMES[i]+"_bias_z",biases_[i][Z_AXIS],default_bias);
-  }
-  priv_.param<std::string>("port",port_,"/dev/ttyUSB0");
-  priv_.param("sec",sec_,0.666); // 0.6 should be equal to every 100 msgs
-}
-----------------------------------------------------------------------------*/
-
+/**
+ * @brief Initialize the dynamic parameter reconfiguring server.
+ */
 void memsense_imu::IMUNodeBase::initDynParamsSrv()
 {
   dyn_params_srv_.setCallback( boost::bind(&IMUNodeBase::dynReconfigureParams,this,_1,_2) );
 }
 
+/**
+ * @brief Advertise standard IMU and custom MAG data topics.
+ */
 void memsense_imu::IMUNodeBase::advertiseTopics()
 {
   pub_raw_ = node_.advertise<sensor_msgs::Imu>("data",10);
@@ -102,6 +100,12 @@ void memsense_imu::IMUNodeBase::advertiseTopics()
   pub_filtered_mag_unbiased_ = node_.advertise<memsense_imu::ImuMAG>("mag_filtered_calibrated",10);
 }
 
+/**
+ * @brief Poll the unit for a new sample and publish it if success.
+ *
+ * If filtering is enabled, filter is updated too.
+ * If the reading fails a warning is produced.
+ */
 void memsense_imu::IMUNodeBase::poll()
 {
   try
@@ -122,7 +126,7 @@ void memsense_imu::IMUNodeBase::poll()
       }
       else
       {
-        ROS_DEBUG_STREAM("Sample read failure.");
+        ROS_WARN_STREAM("Sample read failure.");
       }
     }
   }
@@ -132,6 +136,16 @@ void memsense_imu::IMUNodeBase::poll()
   }
 }
 
+/**
+ * @brief Publish raw and calibrated standard IMU data.
+ * @param sample array of raw readings to output.
+ * @param bias current bias values (for each magnitude and axis).
+ * @param var current variance values (for each magnitude).
+ * @param stamp sample time stamp.
+ * @param frame_id IMU frame identifier.
+ * @param pub_raw raw data publisher.
+ * @param pub_calibrated calibrated data publisher.
+ */
 void memsense_imu::IMUNodeBase::outputData(const SampleArray& sample,
                                            const BiasTable& bias,
                                            const VarianceTable& var,
@@ -205,6 +219,16 @@ void memsense_imu::IMUNodeBase::outputData(const SampleArray& sample,
 }
 
 
+/**
+ * @brief Publish raw and calibrated custom MAG data.
+ * @param sample array of raw readings to output.
+ * @param bias current bias values (for each magnitude and axis).
+ * @param var current variance values (for each magnitude).
+ * @param stamp sample time stamp.
+ * @param frame_id IMU frame identifier.
+ * @param pub_raw raw data publisher.
+ * @param pub_calibrated calibrated data publisher.
+ */
 void memsense_imu::IMUNodeBase::outputMAGData(const SampleArray& sample,
                                               const BiasTable& bias,
                                               const VarianceTable& var,
@@ -299,6 +323,9 @@ void memsense_imu::IMUNodeBase::outputMAGData(const SampleArray& sample,
 }
 
 
+/**
+ * @brief Publish both standard IMU and custom MAG filtered data.
+ */
 void memsense_imu::IMUNodeBase::outputFilter()
 {
   unsigned int count = filter_.count();
@@ -322,6 +349,13 @@ void memsense_imu::IMUNodeBase::outputFilter()
   }
 }
 
+
+/**
+ * @brief Check for generic parameter update.
+ * @param param parameter variable to be updated.
+ * @param new_value new value for the parameter.
+ * @return whether the parameter has been updated with a new value.
+ */
 template <typename T>
 bool memsense_imu::IMUNodeBase::updateDynParam(T* param, const T& new_value) const
 {
@@ -334,6 +368,11 @@ bool memsense_imu::IMUNodeBase::updateDynParam(T* param, const T& new_value) con
     return false;
 }
 
+/**
+ * @brief Reconfigure dynamic parameters callback.
+ * @param params new parameter configuration.
+ * @param level not used.
+ */
 void memsense_imu::IMUNodeBase::dynReconfigureParams(memsense_imu::IMUDynParamsConfig& params,
                                                      uint32_t level)
 {
@@ -455,6 +494,11 @@ void memsense_imu::IMUNodeBase::dynReconfigureParams(memsense_imu::IMUDynParamsC
   }
 }
 
+
+/**
+ * @brief Initialize the name string to Memsense IMU device type map.
+ * @return map mapping each name string to the corresponding device type.
+ */
 std::map<std::string,mems::E_DeviceType>
 memsense_imu::IMUNodeBase::define_type_names()
 {
@@ -466,6 +510,12 @@ memsense_imu::IMUNodeBase::define_type_names()
 const std::map<std::string,mems::E_DeviceType>
 memsense_imu::IMUNodeBase::IMU_TYPE_NAMES_ = define_type_names();
 
+
+/**
+ * @brief Get the corresponding device type from the name string.
+ * @param name string identifying a Memsense device type, as defined in its API.
+ * @return corresponding device type or invalid type if name is not recognized.
+ */
 mems::E_DeviceType memsense_imu::IMUNodeBase::nameToDeviceType(const std::string& name) const
 {
   std::map<std::string, mems::E_DeviceType>::const_iterator it = IMU_TYPE_NAMES_.find(name);
