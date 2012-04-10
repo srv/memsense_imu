@@ -124,11 +124,11 @@ private:
   VarianceTable vars_;          //!< Magnitude variances.
   BiasTable biases_;            //!< Magnitude biases in each axis.
   
-  bool sampler_ready_; //!< sampler is ready when port is ok and parser is ok.
-  bool parser_ok_;     //!< sampler parser initialized.
-  bool port_ok_;       //!< sampler port opened.
+  bool sampler_ready_; //!< Sampler is ready when port is ok and parser is ok.
+  bool parser_ok_;     //!< Sampler parser initialized.
+  bool port_ok_;       //!< Sampler port opened.
 
-  double polling_rate_; //!< desired polling rate.
+  double polling_rate_; //!< Desired polling rate.
 
   Filter filter_; //!< IMU sample filter.
 
