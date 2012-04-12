@@ -9,7 +9,7 @@
 #include "Types.h"
 
 #include <vector>
-#include <cstddef>
+#include <cstddef> // NULL macro
 
 namespace mems
 {

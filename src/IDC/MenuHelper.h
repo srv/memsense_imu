@@ -28,6 +28,7 @@
 #define MEMS_MENU_HELPER_H
 
 #include <string>
+#include <cstddef> // NULL macro
 
 namespace mems
 {

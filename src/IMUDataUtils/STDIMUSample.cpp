@@ -8,6 +8,7 @@
 #include "CommonUtils.h"
 #include "SensorDataUtils.h"
 #include "ISensorDataTransform.h"
+#include <cstddef> // NULL macro
 
 using namespace mems;
 

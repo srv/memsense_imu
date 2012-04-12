@@ -8,6 +8,7 @@
 #include <string>
 #include <vector>
 #include <fstream>
+#include <cstddef> // NULL macro
 
 namespace mems
 {

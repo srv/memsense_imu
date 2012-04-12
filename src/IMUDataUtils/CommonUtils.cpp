@@ -34,7 +34,7 @@
 #include "STDIMUSample.h"
 #include <iostream>
 #include <sstream>  // ostringstream
-
+#include <cstddef>  // NULL macro
 
 namespace mems
 {

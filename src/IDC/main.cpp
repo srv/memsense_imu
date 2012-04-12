@@ -149,6 +149,8 @@
 #include <string>       // argument handling
 #include <algorithm>    // std::transform()
 #include <ctime>        // time
+#include <cstddef>      // NULL macro
+
 /*****************************************************************************
  * NAMESPACE MEMS - BEGIN
  *****************************************************************************/

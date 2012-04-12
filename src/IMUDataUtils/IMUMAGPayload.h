@@ -30,7 +30,7 @@
 
 #include "IIMUPayload.h"
 #include "SDTDefault.h"
-#include <cstddef>
+#include <cstddef> // NULL macro
 
 namespace mems
 {

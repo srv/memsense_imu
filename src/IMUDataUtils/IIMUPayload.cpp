@@ -1,6 +1,6 @@
-#include <cstddef>
 #include "IIMUPayload.h"
 #include "ISensorDataTransform.h"
+#include <cstddef> // NULL macro
 
 using namespace mems;
 

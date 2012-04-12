@@ -38,6 +38,8 @@
 #include <iostream>     // file output
 #include <iomanip>      // ios:: constants
 #include <cstdlib>      // exit calls
+#include <cstddef>      // NULL macro
+
 namespace mems
 {
 std::ofstream g_ofile; // output file stream
