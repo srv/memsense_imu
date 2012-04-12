@@ -9,6 +9,7 @@
 #include "Types.h"
 
 #include <vector>
+#include <cstddef>
 
 namespace mems
 {
