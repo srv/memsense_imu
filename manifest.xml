@@ -6,7 +6,7 @@
      class for Unix alike systems).
   </description>
   <author>Joan Pau Beltran</author>
-  <license>GPL (need to check it)</license>
+  <license>GPL</license>
   <review status="unreviewed" notes=""/>
   <url>http://ros.org/wiki/memsense_imu</url>
   <depend package="roscpp"/>
