@@ -1,40 +1,85 @@
-cmake_minimum_required(VERSION 2.4.6)
-include($ENV{ROS_ROOT}/core/rosbuild/rosbuild.cmake)
-
-# Set the build type.  Options are:
-#  Coverage       : w/ debug symbols, w/o optimization, w/ code-coverage
-#  Debug          : w/ debug symbols, w/o optimization
-#  Release        : w/o debug symbols, w/ optimization
-#  RelWithDebInfo : w/ debug symbols, w/ optimization
-#  MinSizeRel     : w/o debug symbols, w/ optimization, stripped binaries
-#set(ROS_BUILD_TYPE RelWithDebInfo)
-
-rosbuild_init()
-
-#set the default path for built executables to the "bin" directory
-set(EXECUTABLE_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/bin)
-#set the default path for built libraries to the "lib" directory
-set(LIBRARY_OUTPUT_PATH ${PROJECT_SOURCE_DIR}/lib)
+cmake_minimum_required(VERSION 2.8.3)
+project(memsense_imu)
+find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs std_msgs message_generation driver_base dynamic_reconfigure nodelet)
 
 #uncomment if you have defined messages
-rosbuild_genmsg()
-#uncomment if you have defined services
-#rosbuild_gensrv()
+add_message_files(
+  DIRECTORY
+  msg
+  FILES
+  ImuMAG.msg
+)
 
-#add dynamic reconfigure api
-rosbuild_find_ros_package(dynamic_reconfigure)
-include(${dynamic_reconfigure_PACKAGE_PATH}/cmake/cfgbuild.cmake)
-gencfg()
+## Generate added messages and services with any dependencies listed here
+generate_messages(
+  DEPENDENCIES std_msgs geometry_msgs
+)
 
-#common commands for building c++ executables and libraries
-#rosbuild_add_library(${PROJECT_NAME} src/example.cpp)
-#target_link_libraries(${PROJECT_NAME} another_library)
-#rosbuild_add_boost_directories()
-#rosbuild_link_boost(${PROJECT_NAME} thread)
-#rosbuild_add_executable(example examples/example.cpp)
-#target_link_libraries(example ${PROJECT_NAME})
+# auto-generated dynamic reconfiguration GUI
+generate_dynamic_reconfigure_options(cfg/DynParams.cfg)
 
-add_subdirectory(src/IMUDataUtils)
-add_subdirectory(src/IMUSampler)
-add_subdirectory(src/IDC)
-add_subdirectory(src/nodes)
+catkin_package()
+
+include_directories(src cfg/cpp ${catkin_INCLUDE_DIRS})
+
+add_library(IMUDataUtils 
+            src/IMUDataUtils/UnknownIMUSample.cpp
+            src/IMUDataUtils/IMUCounterUtils.cpp
+            src/IMUDataUtils/DeviceParams.cpp
+            src/IMUDataUtils/StandardIMUHeader.cpp
+            src/IMUDataUtils/IIMUPayload.cpp
+            src/IMUDataUtils/SDTDefaultPre.cpp
+            src/IMUDataUtils/IMUHiGPayload.cpp
+            src/IMUDataUtils/SensorDataUtils.cpp
+            src/IMUDataUtils/SerialDeviceParams.cpp
+            src/IMUDataUtils/SDTDefault.cpp
+            src/IMUDataUtils/CommonUtils.cpp
+            src/IMUDataUtils/STDIMUSample.cpp
+            src/IMUDataUtils/IMUTempPayload.cpp
+            src/IMUDataUtils/SerialComm.cpp
+            src/IMUDataUtils/IMUUnknownPayload.cpp
+            src/IMUDataUtils/IMUMAGPayload.cpp)
+
+add_library(IMUSampler
+            src/IMUSampler/IMUSampler.cpp
+            src/IMUSampler/IMUSampler.h)
+target_link_libraries(IMUSampler IMUDataUtils ${catkin_LIBRARIES})
+
+add_executable(IDC
+               src/IDC/AutoConfig.cpp
+               src/IDC/AutoConfig.h
+               src/IDC/CMakeLists.txt
+               src/IDC/GlobalVars.cpp
+               src/IDC/GlobalVars.h
+               src/IDC/GlobalVarsInternal.cpp
+               src/IDC/GlobalVarsInternal.h
+               src/IDC/IDCConfig.h
+               src/IDC/IDCUtils.cpp
+               src/IDC/IDCUtils.h
+               src/IDC/IMenuHook.h
+               src/IDC/IMUMsgsCommon.cpp
+               src/IDC/IMUMsgsCommon.h
+               src/IDC/IOHelpers.h
+               src/IDC/IOHelpersImpl.h
+               src/IDC/main.cpp
+               src/IDC/MenuHelper.cpp
+               src/IDC/MenuHelper.h
+               src/IDC/MenuHelperInternal.cpp
+               src/IDC/MenuHelperInternal.h
+)
+
+target_link_libraries(IDC IMUDataUtils ${catkin_LIBRARIES})
+
+set(BASE_SOURCES
+    src/nodes/imu_node_base.cpp
+    src/nodes/imu_filter.cpp )
+
+add_executable(imu_node src/nodes/imu_node.cpp ${BASE_SOURCES})
+target_link_libraries(imu_node IMUSampler ${catkin_LIBRARIES})
+
+add_library(imu_nodelet src/nodes/imu_nodelet.cpp ${BASE_SOURCES})
+target_link_libraries(imu_nodelet IMUSampler ${catkin_LIBRARIES})
+
+
+
+

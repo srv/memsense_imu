@@ -1,0 +1,36 @@
+<package>
+  <name>memsense_imu</name>
+  <version>0.0.1</version>
+  <description>This is a ROS generic driver for inertial measurement units (IMUs)
+     provided by Memsense. It uses Memsense libraries to handle IMU's output
+     on the serial port (with some errors fixed, and a rewritten serial port 
+     class for Unix alike systems).</description>
+   <maintainer email="miquel.massot@uib.cat">Miquel Massot</maintainer>
+
+  <license>GPL</license>
+
+  <url type="website">http://ros.org/wiki/memsense_imu</url>
+
+  <author>Joan Pau Beltran</author>
+
+  <buildtool_depend>catkin</buildtool_depend>
+  <build_depend>roscpp</build_depend> 
+  <build_depend>sensor_msgs</build_depend> 
+  <build_depend>driver_base</build_depend> 
+  <build_depend>dynamic_reconfigure</build_depend> 
+  <build_depend>nodelet</build_depend> 
+  <run_depend>roscpp</run_depend> 
+  <run_depend>sensor_msgs</run_depend> 
+  <run_depend>driver_base</run_depend> 
+  <run_depend>dynamic_reconfigure</run_depend> 
+  <run_depend>nodelet</run_depend> 
+  <!-- <test_depend>roscpp</test_depend> -->
+  <!-- <test_depend>sensor_msgs</test_depend> -->
+  <!-- <test_depend>driver_base</test_depend> -->
+  <!-- <test_depend>dynamic_reconfigure</test_depend> -->
+  <!-- <test_depend>nodelet</test_depend> -->
+
+  <export>
+    <nodelet plugin="${prefix}/nodelet/nodelet_plugins.xml"/>
+  </export>
+</package>
