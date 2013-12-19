@@ -48,7 +48,6 @@ target_link_libraries(IMUSampler IMUDataUtils ${catkin_LIBRARIES})
 add_executable(IDC
                src/IDC/AutoConfig.cpp
                src/IDC/AutoConfig.h
-               src/IDC/CMakeLists.txt
                src/IDC/GlobalVars.cpp
                src/IDC/GlobalVars.h
                src/IDC/GlobalVarsInternal.cpp
