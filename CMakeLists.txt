@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(memsense_imu)
-find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs std_msgs message_generation driver_base dynamic_reconfigure nodelet)
+find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs std_msgs sensor_msgs message_generation driver_base dynamic_reconfigure nodelet)
 
 #uncomment if you have defined messages
 add_message_files(
@@ -16,9 +16,11 @@ generate_messages(
 )
 
 # auto-generated dynamic reconfiguration GUI
-generate_dynamic_reconfigure_options(cfg/DynParams.cfg)
+generate_dynamic_reconfigure_options(cfg/IMUDynParams.cfg)
 
-catkin_package()
+catkin_package(
+  CATKIN_DEPENDS roscpp geometry_msgs std_msgs sensor_msgs message_runtime driver_base dynamic_reconfigure nodelet
+)
 
 include_directories(src cfg/cpp ${catkin_INCLUDE_DIRS})
 
@@ -43,7 +45,7 @@ add_library(IMUDataUtils
 add_library(IMUSampler
             src/IMUSampler/IMUSampler.cpp
             src/IMUSampler/IMUSampler.h)
-target_link_libraries(IMUSampler IMUDataUtils ${catkin_LIBRARIES})
+target_link_libraries(IMUSampler IMUDataUtils)
 
 add_executable(IDC
                src/IDC/AutoConfig.cpp
@@ -67,18 +69,17 @@ add_executable(IDC
                src/IDC/MenuHelperInternal.h
 )
 
-target_link_libraries(IDC IMUDataUtils ${catkin_LIBRARIES})
+target_link_libraries(IDC IMUDataUtils)
 
 set(BASE_SOURCES
     src/nodes/imu_node_base.cpp
     src/nodes/imu_filter.cpp )
 
 add_executable(imu_node src/nodes/imu_node.cpp ${BASE_SOURCES})
+add_dependencies(imu_node memsense_imu_EXPORTED_TARGETS)
 target_link_libraries(imu_node IMUSampler ${catkin_LIBRARIES})
 
 add_library(imu_nodelet src/nodes/imu_nodelet.cpp ${BASE_SOURCES})
+add_dependencies(imu_nodelet memsense_imu_EXPORTED_TARGETS)
 target_link_libraries(imu_nodelet IMUSampler ${catkin_LIBRARIES})
-
-
-
 
