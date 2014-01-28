@@ -76,10 +76,10 @@ set(BASE_SOURCES
     src/nodes/imu_filter.cpp )
 
 add_executable(imu_node src/nodes/imu_node.cpp ${BASE_SOURCES})
-add_dependencies(imu_node memsense_imu_EXPORTED_TARGETS)
+add_dependencies(imu_node memsense_imu_EXPORTED_TARGETS memsense_imu_gencpp)
 target_link_libraries(imu_node IMUSampler ${catkin_LIBRARIES})
 
 add_library(imu_nodelet src/nodes/imu_nodelet.cpp ${BASE_SOURCES})
-add_dependencies(imu_nodelet memsense_imu_EXPORTED_TARGETS)
+add_dependencies(imu_nodelet memsense_imu_EXPORTED_TARGETS memsense_imu_gencpp)
 target_link_libraries(imu_nodelet IMUSampler ${catkin_LIBRARIES})
 
