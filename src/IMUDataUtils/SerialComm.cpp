@@ -26,6 +26,7 @@
 #include <cerrno>
 #include <cstdlib>
 #include <fcntl.h>
+#include <unistd.h>
 
 ///////////////////////////////////////////////////////////////////////////////
 using namespace mems;
