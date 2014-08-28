@@ -252,7 +252,8 @@ int main(int argc, char* argv[])
     mems_getch();
   }
 
-  delete menuHook;
+  // cannot delete a void pointer 28/08/2014 MMC
+  //delete menuHook;
 
   return (0);
 }
