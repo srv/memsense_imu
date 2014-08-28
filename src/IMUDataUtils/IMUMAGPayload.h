@@ -69,13 +69,6 @@ public:
   std::vector<double> getVolts();
   unsigned short getSize();
 
-private:
-  static const unsigned short NUM_SENSORS;
-  static const unsigned short AXES_PER_SENSOR;
-  static const unsigned short BYTES_PER_AXIS;
-  static const unsigned short PAYLOAD_SIZE_BYTES;
-  static const unsigned short PAYLOAD_SIZE_COUNTS;
-
   /**
    * Index of beginning of sensor groups within the *counts* payload.
    * For example, the Accel X value starts at index 3.
@@ -84,6 +77,13 @@ private:
   {
     GYRO = 0, ACCEL = 3, MAG = 6
   };
+
+private:
+  static const unsigned short NUM_SENSORS;
+  static const unsigned short AXES_PER_SENSOR;
+  static const unsigned short BYTES_PER_AXIS;
+  static const unsigned short PAYLOAD_SIZE_BYTES;
+  static const unsigned short PAYLOAD_SIZE_COUNTS;
 
   SDTDefault m_defaultSDT;
   std::vector<unsigned char> m_payload;
