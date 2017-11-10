@@ -1,6 +1,6 @@
 cmake_minimum_required(VERSION 2.8.3)
 project(memsense_imu)
-find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs std_msgs sensor_msgs message_generation driver_base dynamic_reconfigure nodelet)
+find_package(catkin REQUIRED COMPONENTS roscpp geometry_msgs std_msgs sensor_msgs message_generation dynamic_reconfigure nodelet)
 
 #uncomment if you have defined messages
 add_message_files(
@@ -19,7 +19,7 @@ generate_messages(
 generate_dynamic_reconfigure_options(cfg/IMUDynParams.cfg)
 
 catkin_package(
-  CATKIN_DEPENDS roscpp geometry_msgs std_msgs sensor_msgs message_runtime driver_base dynamic_reconfigure nodelet
+  CATKIN_DEPENDS roscpp geometry_msgs std_msgs sensor_msgs message_runtime dynamic_reconfigure nodelet
 )
 
 include_directories(src cfg/cpp ${catkin_INCLUDE_DIRS})

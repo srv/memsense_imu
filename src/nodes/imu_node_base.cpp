@@ -94,10 +94,10 @@ void memsense_imu::IMUNodeBase::advertiseTopics()
   pub_unbiased_ = node_.advertise<sensor_msgs::Imu>("data_calibrated",10);
   pub_filtered_raw_ = node_.advertise<sensor_msgs::Imu>("data_filtered",10);
   pub_filtered_unbiased_ = node_.advertise<sensor_msgs::Imu>("data_filtered_calibrated",10);
-  pub_mag_ = node_.advertise<memsense_imu::ImuMAG>("mag",10);
-  pub_mag_unbiased_ = node_.advertise<memsense_imu::ImuMAG>("mag_calibrated",10);
-  pub_filtered_mag_ = node_.advertise<memsense_imu::ImuMAG>("mag_filtered",10);
-  pub_filtered_mag_unbiased_ = node_.advertise<memsense_imu::ImuMAG>("mag_filtered_calibrated",10);
+  pub_mag_ = node_.advertise<sensor_msgs::MagneticField>("mag",10);
+  pub_mag_unbiased_ = node_.advertise<sensor_msgs::MagneticField>("mag_calibrated",10);
+  pub_filtered_mag_ = node_.advertise<sensor_msgs::MagneticField>("mag_filtered",10);
+  pub_filtered_mag_unbiased_ = node_.advertise<sensor_msgs::MagneticField>("mag_filtered_calibrated",10);
 }
 
 /**
@@ -238,8 +238,8 @@ void memsense_imu::IMUNodeBase::outputMAGData(const SampleArray& sample,
                                               const ros::Publisher& pub_calibrated)
 {
   // messages to publish
-  memsense_imu::ImuMAGPtr mag(new memsense_imu::ImuMAG());
-  memsense_imu::ImuMAGPtr mag_unbias(new memsense_imu::ImuMAG());
+  sensor_msgs::MagneticFieldPtr mag(new sensor_msgs::MagneticField());
+  sensor_msgs::MagneticFieldPtr mag_unbias(new sensor_msgs::MagneticField());
 
   // fill header
   mag->header.stamp = stamp;
@@ -249,52 +249,8 @@ void memsense_imu::IMUNodeBase::outputMAGData(const SampleArray& sample,
   // initiatize covariances
   for (int i=0; i<3; i++)
   {
-    mag->angular_velocity_covariance[4*i] = -1.0;
-    mag->linear_acceleration_covariance[4*i] = -1.0;
     mag->magnetic_field_covariance [4+i] = -1.0;
-    mag_unbias->angular_velocity_covariance[4*i] = -1.0;
-    mag_unbias->linear_acceleration_covariance[4*i] = -1.0;
     mag_unbias->magnetic_field_covariance[4*i] = -1.0;
-  }
-
-  // fill gyro values and covariances
-  switch( sample[MAGN_GYRO].size() )
-  {
-    case 3 :
-      mag->angular_velocity.z = sample[MAGN_GYRO][Z_AXIS];
-      mag->angular_velocity_covariance[8] = var[MAGN_GYRO];
-      mag_unbias->angular_velocity.z = sample[MAGN_GYRO][Z_AXIS]-bias[MAGN_GYRO][Z_AXIS];
-      mag_unbias->angular_velocity_covariance[8] = var[MAGN_GYRO];
-    case 2 :
-      mag->angular_velocity.y = sample[MAGN_GYRO][Y_AXIS];
-      mag->angular_velocity_covariance[4] = var[MAGN_GYRO];
-      mag_unbias->angular_velocity.y = sample[MAGN_GYRO][Y_AXIS]-bias[MAGN_GYRO][Y_AXIS];
-      mag_unbias->angular_velocity_covariance[4] = var[MAGN_GYRO];
-    case 1 :
-      mag->angular_velocity.x = sample[MAGN_GYRO][X_AXIS];
-      mag->angular_velocity_covariance[0] = var[MAGN_GYRO];
-      mag_unbias->angular_velocity.x = sample[MAGN_GYRO][X_AXIS]-bias[MAGN_GYRO][X_AXIS];
-      mag_unbias->angular_velocity_covariance[0] = var[MAGN_GYRO];
-  }
-
-  // fill accel values and covariances
-  switch( sample[MAGN_ACCEL].size() )
-  {
-    case 3 :
-      mag->linear_acceleration.z = sample[MAGN_ACCEL][Z_AXIS];
-      mag->linear_acceleration_covariance[8] = var[MAGN_ACCEL];
-      mag_unbias->linear_acceleration.z = sample[MAGN_ACCEL][Z_AXIS]-bias[MAGN_ACCEL][Z_AXIS];
-      mag_unbias->linear_acceleration_covariance[8] = var[MAGN_ACCEL];
-    case 2 :
-      mag->linear_acceleration.y = sample[MAGN_ACCEL][Y_AXIS];
-      mag->linear_acceleration_covariance[4] = var[MAGN_ACCEL];
-      mag_unbias->linear_acceleration.y = sample[MAGN_ACCEL][Y_AXIS]-bias[MAGN_ACCEL][Y_AXIS];
-      mag_unbias->linear_acceleration_covariance[4] = var[MAGN_ACCEL];
-    case 1 :
-      mag->linear_acceleration.x = sample[MAGN_ACCEL][X_AXIS];
-      mag->linear_acceleration_covariance[0] = var[MAGN_ACCEL];
-      mag_unbias->linear_acceleration.x = sample[MAGN_ACCEL][X_AXIS]-bias[MAGN_ACCEL][X_AXIS];
-      mag_unbias->linear_acceleration_covariance[0] = var[MAGN_ACCEL];
   }
 
   // fill magnet values and covariances

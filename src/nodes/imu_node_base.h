@@ -64,7 +64,7 @@
 
 #include <ros/ros.h>
 #include <sensor_msgs/Imu.h>
-#include <memsense_imu/ImuMAG.h>
+#include <sensor_msgs/MagneticField.h>
 #include <dynamic_reconfigure/server.h>
 #include <map>
 #include "memsense_imu/IMUDynParamsConfig.h"
