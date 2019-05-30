@@ -367,16 +367,17 @@ void memsense_imu::IMUNodeBase::dynReconfigureParams(memsense_imu::IMUDynParamsC
     updateDynParam(&biases_[MAGN_MAG][Y_AXIS], params.mag_bias_y);
     updateDynParam(&biases_[MAGN_MAG][Z_AXIS], params.mag_bias_z);
 
-    updateDynParam(&trans_[X_AXIS][X_AXIS], params.mag_bias_xx);
-    updateDynParam(&trans_[X_AXIS][Y_AXIS], params.mag_bias_xy);
-    updateDynParam(&trans_[X_AXIS][Z_AXIS], params.mag_bias_xz);
-    updateDynParam(&trans_[Y_AXIS][X_AXIS], params.mag_bias_yx);
-    updateDynParam(&trans_[Y_AXIS][Y_AXIS], params.mag_bias_yy);
-    updateDynParam(&trans_[Y_AXIS][Z_AXIS], params.mag_bias_yz);
-    updateDynParam(&trans_[Z_AXIS][X_AXIS], params.mag_bias_zx);
-    updateDynParam(&trans_[Z_AXIS][Y_AXIS], params.mag_bias_zy);
-    updateDynParam(&trans_[Z_AXIS][Z_AXIS], params.mag_bias_zz);
-
+    updateDynParam(&trans_[X_AXIS][X_AXIS], params.mag_trans_xx);
+    updateDynParam(&trans_[X_AXIS][Y_AXIS], params.mag_trans_xy);
+    updateDynParam(&trans_[X_AXIS][Z_AXIS], params.mag_trans_xz);
+    updateDynParam(&trans_[Y_AXIS][X_AXIS], params.mag_trans_yx);
+    updateDynParam(&trans_[Y_AXIS][Y_AXIS], params.mag_trans_yy);
+    updateDynParam(&trans_[Y_AXIS][Z_AXIS], params.mag_trans_yz);
+    updateDynParam(&trans_[Z_AXIS][X_AXIS], params.mag_trans_zx);
+    updateDynParam(&trans_[Z_AXIS][Y_AXIS], params.mag_trans_zy);
+    updateDynParam(&trans_[Z_AXIS][Z_AXIS], params.mag_trans_zz);
+    ROS_INFO_STREAM("biases_[Z_AXIS][X_AXIS]: " << biases_[0][0]);
+    ROS_INFO_STREAM("trans_[Z_AXIS][X_AXIS]: " << trans_[0][0]);
     updateDynParam(&frame_id_, params.frame_id);
 
     // all conditions must be evaluated to update the parameters
