@@ -123,7 +123,8 @@ private:
   double ranges_[NUM_MAGNS];    //!< Magnitude ranges (implicitly set the units).
   VarianceTable vars_;          //!< Magnitude variances.
   BiasTable biases_;            //!< Magnitude biases in each axis.
-  
+  TransTable trans_;            //!< Magnitude translations (mag soft iron).
+
   bool sampler_ready_; //!< Sampler is ready when port is ok and parser is ok.
   bool parser_ok_;     //!< Sampler parser initialized.
   bool port_ok_;       //!< Sampler port opened.
@@ -143,13 +144,14 @@ private:
                   const ros::Publisher& pub_raw,
                   const ros::Publisher& pub_calibrated);
 
-  void outputMAGData(const SampleArray& sample,
-                     const BiasTable& bias,
-                     const VarianceTable& var,
-                     const ros::Time& stamp,
-                     const std::string& frame_id,
-                     const ros::Publisher& pub_raw,
-                     const ros::Publisher& pub_calibrated);
+  void outputMAGData(const SampleArray &sample,
+                     const BiasTable &bias,
+                     const TransTable &trans,
+                     const VarianceTable &var,
+                     const ros::Time &stamp,
+                     const std::string &frame_id,
+                     const ros::Publisher &pub_raw,
+                     const ros::Publisher &pub_calibrated);
 
   template <typename T>
   bool updateDynParam(T* param, const T& new_value) const;

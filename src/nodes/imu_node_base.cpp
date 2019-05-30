@@ -122,7 +122,7 @@ void memsense_imu::IMUNodeBase::poll()
         if (do_filtering_)
           filter_.update(sample);
         outputData(sample, biases_, vars_, stamp, frame_id, pub_raw_, pub_unbiased_);
-        outputMAGData(sample, biases_, vars_, stamp, frame_id, pub_mag_, pub_mag_unbiased_);
+        outputMAGData(sample, biases_, trans_, vars_, stamp, frame_id, pub_mag_, pub_mag_unbiased_);
       }
       else
       {
@@ -229,13 +229,14 @@ void memsense_imu::IMUNodeBase::outputData(const SampleArray& sample,
  * @param pub_raw raw data publisher.
  * @param pub_calibrated calibrated data publisher.
  */
-void memsense_imu::IMUNodeBase::outputMAGData(const SampleArray& sample,
-                                              const BiasTable& bias,
-                                              const VarianceTable& var,
-                                              const ros::Time& stamp,
-                                              const std::string& frame_id,
-                                              const ros::Publisher& pub_raw,
-                                              const ros::Publisher& pub_calibrated)
+void memsense_imu::IMUNodeBase::outputMAGData(const SampleArray &sample,
+                                              const BiasTable &bias,
+                                              const TransTable &trans,
+                                              const VarianceTable &var,
+                                              const ros::Time &stamp,
+                                              const std::string &frame_id,
+                                              const ros::Publisher &pub_raw,
+                                              const ros::Publisher &pub_calibrated)
 {
   // messages to publish
   sensor_msgs::MagneticFieldPtr mag(new sensor_msgs::MagneticField());
@@ -259,17 +260,26 @@ void memsense_imu::IMUNodeBase::outputMAGData(const SampleArray& sample,
     case 3 :
       mag->magnetic_field.z = sample[MAGN_MAG][Z_AXIS];
       mag->magnetic_field_covariance[8] = var[MAGN_MAG];
-      mag_unbias->magnetic_field.z = sample[MAGN_MAG][Z_AXIS]-bias[MAGN_MAG][Z_AXIS];
+      mag_unbias->magnetic_field.z = (trans[Z_AXIS][X_AXIS] * sample[MAGN_MAG][X_AXIS] +
+                                      trans[Z_AXIS][Y_AXIS] * sample[MAGN_MAG][Y_AXIS] +
+                                      trans[Z_AXIS][Z_AXIS] * sample[MAGN_MAG][Z_AXIS]) -
+                                      bias[MAGN_MAG][Z_AXIS];
       mag_unbias->magnetic_field_covariance[8] = var[MAGN_MAG];
     case 2 :
       mag->magnetic_field.y = sample[MAGN_MAG][Y_AXIS];
       mag->magnetic_field_covariance[4] = var[MAGN_MAG];
-      mag_unbias->magnetic_field.y = sample[MAGN_MAG][Y_AXIS]-bias[MAGN_MAG][Y_AXIS];
+      mag_unbias->magnetic_field.y = (trans[Y_AXIS][X_AXIS] * sample[MAGN_MAG][X_AXIS] +
+                                      trans[Y_AXIS][Y_AXIS] * sample[MAGN_MAG][Y_AXIS] +
+                                      trans[Y_AXIS][Z_AXIS] * sample[MAGN_MAG][Z_AXIS]) -
+                                      bias[MAGN_MAG][Y_AXIS];
       mag_unbias->magnetic_field_covariance[4] = var[MAGN_MAG];
     case 1 :
       mag->magnetic_field.x = sample[MAGN_MAG][X_AXIS];
       mag->magnetic_field_covariance[0] = var[MAGN_MAG];
-      mag_unbias->magnetic_field.x = sample[MAGN_MAG][X_AXIS]-bias[MAGN_MAG][X_AXIS];
+      mag_unbias->magnetic_field.x = (trans[X_AXIS][X_AXIS] * sample[MAGN_MAG][X_AXIS] +
+                                      trans[X_AXIS][Y_AXIS] * sample[MAGN_MAG][Y_AXIS] +
+                                      trans[X_AXIS][Z_AXIS] * sample[MAGN_MAG][Z_AXIS]) -
+                                      bias[MAGN_MAG][X_AXIS];
       mag_unbias->magnetic_field_covariance[0] = var[MAGN_MAG];
   }
 
@@ -293,14 +303,21 @@ void memsense_imu::IMUNodeBase::outputFilter()
     filter_.median(&resp);
     VarianceTable resp_vars;
     BiasTable resp_biases;
+    TransTable resp_trans;
     for (int i=0; i<NUM_MAGNS; i++)
     {
       resp_vars[i] = vars_[i]/double(count);
       for (int j=0; j<NUM_AXES; j++)
         resp_biases[i][j] = biases_[i][j];
     }
+    for (int i = 0; i < NUM_AXES; i++)
+    {
+      resp_vars[i] = vars_[i] / double(count);
+      for (int j = 0; j < NUM_AXES; j++)
+        resp_trans[i][j] = trans_[i][j];
+    }
     outputData(resp, resp_biases, resp_vars, stamp, frame_id, pub_filtered_raw_, pub_filtered_unbiased_);
-    outputMAGData(resp, resp_biases, resp_vars, stamp, frame_id, pub_filtered_mag_, pub_filtered_mag_unbiased_);
+    outputMAGData(resp, resp_biases, resp_trans, resp_vars, stamp, frame_id, pub_filtered_mag_, pub_filtered_mag_unbiased_);
     filter_.reset();
   }
 }
@@ -349,6 +366,16 @@ void memsense_imu::IMUNodeBase::dynReconfigureParams(memsense_imu::IMUDynParamsC
     updateDynParam(&biases_[MAGN_MAG][X_AXIS], params.mag_bias_x);
     updateDynParam(&biases_[MAGN_MAG][Y_AXIS], params.mag_bias_y);
     updateDynParam(&biases_[MAGN_MAG][Z_AXIS], params.mag_bias_z);
+
+    updateDynParam(&trans_[X_AXIS][X_AXIS], params.mag_bias_xx);
+    updateDynParam(&trans_[X_AXIS][Y_AXIS], params.mag_bias_xy);
+    updateDynParam(&trans_[X_AXIS][Z_AXIS], params.mag_bias_xz);
+    updateDynParam(&trans_[Y_AXIS][X_AXIS], params.mag_bias_yx);
+    updateDynParam(&trans_[Y_AXIS][Y_AXIS], params.mag_bias_yy);
+    updateDynParam(&trans_[Y_AXIS][Z_AXIS], params.mag_bias_yz);
+    updateDynParam(&trans_[Z_AXIS][X_AXIS], params.mag_bias_zx);
+    updateDynParam(&trans_[Z_AXIS][Y_AXIS], params.mag_bias_zy);
+    updateDynParam(&trans_[Z_AXIS][Z_AXIS], params.mag_bias_zz);
 
     updateDynParam(&frame_id_, params.frame_id);
 

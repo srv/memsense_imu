@@ -26,6 +26,7 @@ const int NUM_AXES = 3;
 // Sample format
 typedef std::vector<double> SampleArray[NUM_MAGNS];
 typedef double BiasTable[NUM_MAGNS][NUM_AXES];
+typedef double TransTable[NUM_AXES][NUM_AXES];
 // There is only one variance per sensor
 typedef double VarianceTable[NUM_MAGNS];
 

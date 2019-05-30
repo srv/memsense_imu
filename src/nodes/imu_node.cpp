@@ -52,13 +52,13 @@
  * - @b ~gyro_bias_(x|y|z) gyroscope's bias in each axis (default 0.0).
  * - @b ~accel_bias_(x|y|z) accelerometer's bias in each axis (default 0.0).
  * - @b ~mag_bias_(x|y|z) magnetometer's bias in each axis (default 0.0).
+ * - @b ~mag_trans_(xx|xy|xz,yx|yy|yz,zx|zy|zz) magnetometer's translation (default 0.0).
  * 
  * - @b ~filter_rate filtered output rate (IMU samples in the interval
  *      are collected and the output is its mean).
  * 
  * - @b ~frame_id frame identifier for message header.
  */
-
 
 #include "imu_node_base.h"
 
