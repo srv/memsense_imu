@@ -161,7 +161,8 @@ void memsense_imu::IMUNodeBase::outputData(const SampleArray& sample,
   // fill header
   msg->header.stamp = stamp;
   msg->header.frame_id = frame_id;
-  
+  msg_unbias->header = msg->header;
+
   // initiatize covariances
   for (int i=0; i<3; i++)
   {
