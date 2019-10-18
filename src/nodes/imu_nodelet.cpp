@@ -113,4 +113,5 @@ void memsense_imu::IMUNodelet::onInit()
 // Register this plugin with pluginlib.
 // Names must match *nodelet.xml in package root.
 // Parameters are: package, class name, class type, base class type
-PLUGINLIB_DECLARE_CLASS(memsense_imu, imu_nodelet, memsense_imu::IMUNodelet, nodelet::Nodelet);
+// PLUGINLIB_DECLARE_CLASS(memsense_imu, imu_nodelet, memsense_imu::IMUNodelet, nodelet::Nodelet);
+PLUGINLIB_EXPORT_CLASS(memsense_imu::IMUNodelet, nodelet::Nodelet);
